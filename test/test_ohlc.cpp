@@ -56,7 +56,6 @@ TEST_CASE("HeikinAshi Constructor with Two OHLCs", "[HeikinAshi]") {
     OHLC previous(1.0, 2.0, 0.5, 1.5);
     OHLC current(1.5, 2.5, 1.0, 2.0);
     HeikinAshi ha(current, previous);
-
     REQUIRE_THAT(ha.open, Catch::Matchers::WithinRel(1.25, 0.001));
     REQUIRE_THAT(ha.open, Catch::Matchers::WithinAbs(1.25, 0.000001));
     REQUIRE_THAT(ha.close, Catch::Matchers::WithinRel(1.75, 0.001));
