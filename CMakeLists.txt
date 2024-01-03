@@ -25,6 +25,7 @@ target_include_directories(trading_common
         PRIVATE
         ${TRADING_COMMON_INCLUDE}
         ${NLOHMANN_JSON_INCLUDE}
+        ${COMMON_INCLUDE}
 )
 target_link_libraries(trading_common
         PRIVATE
