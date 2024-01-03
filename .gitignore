@@ -33,4 +33,4 @@
 
 .idea/
 .run/
-.cmake-build-*/
+cmake-build-*/
