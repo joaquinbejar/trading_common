@@ -16,8 +16,11 @@ include(cmake/simple_logger.cmake)
 
 add_library(trading_common STATIC
         src/ohlc.cpp include/trading_common/ohlc.h
-
+        src/order.cpp include/trading_common/order.h
+        src/position.cpp include/trading_common/position.h
+        src/pnl.cpp include/trading_common/pnl.h
 )
+
 target_include_directories(trading_common
         PRIVATE
         ${TRADING_COMMON_INCLUDE}
