@@ -30,7 +30,7 @@ namespace trading::common {
 
         OHLC();
 
-        OHLC(const json &j);
+        explicit OHLC(const json &j);
 
         OHLC(double open, double high, double low, double close);
 
@@ -40,9 +40,9 @@ namespace trading::common {
 
     struct HeikinAshi : public OHLC {
 
-        HeikinAshi(const OHLC &current, const OHLC &previous);
+        explicit HeikinAshi(const OHLC &current, const OHLC &previous);
 
-        HeikinAshi(const OHLC &current);
+        explicit HeikinAshi(const OHLC &current);
 
     };
 
