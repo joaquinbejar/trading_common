@@ -18,8 +18,6 @@ TEST_CASE("OHLC Default Constructor", "[OHLC]") {
     REQUIRE(ohlc.high == 0);
     REQUIRE(ohlc.low == 0);
     REQUIRE(ohlc.close == 0);
-    REQUIRE(ohlc.timestamp == 0);
-    REQUIRE(ohlc.date == "");
 }
 
 

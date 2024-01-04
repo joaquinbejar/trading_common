@@ -65,7 +65,7 @@ namespace trading::common {
 
         OHLC(double open, double high, double low, double close);
 
-        [[nodiscard]] json to_json() const;
+        [[nodiscard]] virtual json to_json() const;
 
     };
 
@@ -78,7 +78,7 @@ namespace trading::common {
 
         OHLCV(timestamp_t timestamp, double open, double high, double low, double close, size_t volume);
 
-        [[nodiscard]] json to_json() const;
+        [[nodiscard]] json to_json() const override;
 
     };
 
