@@ -18,7 +18,10 @@ TEST_CASE("OHLC Default Constructor", "[OHLC]") {
     REQUIRE(ohlc.high == 0);
     REQUIRE(ohlc.low == 0);
     REQUIRE(ohlc.close == 0);
+    REQUIRE(ohlc.timestamp == 0);
+    REQUIRE(ohlc.date == "");
 }
+
 
 TEST_CASE("OHLC JSON Constructor", "[OHLC]") {
     json j = {{"open",  1.0},

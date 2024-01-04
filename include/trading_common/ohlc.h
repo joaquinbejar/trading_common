@@ -34,26 +34,26 @@ namespace trading::common {
 
         Timestamp() = default;
 
-        explicit Timestamp(size_t timestamp) : timestamp(timestamp) {
+        explicit Timestamp(timestamp_t timestamp) : timestamp(timestamp) {
             date = epoch_to_date_string(timestamp);
         }
 
         explicit Timestamp(const json &j) {
             try {
-                timestamp = j["timestamp"];
+                timestamp = j.at("timestamp").get<timestamp_t>();
             } catch (json::exception &e) {
                 throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
             }
         }
 
-        [[nodiscard]] json to_json() const {
+        [[nodiscard]] virtual json to_json() const {
             json j;
             j["timestamp"] = timestamp;
             return j;
         }
     };
 
-    struct OHLC : public Timestamp {
+    struct OHLC {
         double open{};
         double high{};
         double low{};
@@ -68,6 +68,22 @@ namespace trading::common {
         [[nodiscard]] json to_json() const;
 
     };
+
+    struct OHLCV : public Timestamp, public OHLC {
+        size_t volume{};
+
+        OHLCV();
+
+        explicit OHLCV(const json &j);
+
+        OHLCV(timestamp_t timestamp, double open, double high, double low, double close, size_t volume);
+
+        [[nodiscard]] json to_json() const;
+
+    };
+
+
+
 
     struct HeikinAshi : public OHLC {
 

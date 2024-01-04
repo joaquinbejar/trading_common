@@ -22,11 +22,11 @@ namespace trading::common {
         return oss.str();
     }
 
-    OHLC::OHLC() : Timestamp(), open(0), high(0), low(0), close(0) {}
+    OHLC::OHLC() : open(0), high(0), low(0), close(0) {}
 
-    OHLC::OHLC(const json &j) : Timestamp(j){
+    OHLC::OHLC(const json &j) {
         try {
-            open = j["open"];
+            open = j.at("open").get<double>();
             high = j["high"];
             low = j["low"];
             close = j["close"];
@@ -38,11 +38,31 @@ namespace trading::common {
     OHLC::OHLC(double open, double high, double low, double close) : open(open), high(high), low(low), close(close) {}
 
     json OHLC::to_json() const {
-        json j = Timestamp::to_json();
+        json j;
         j["open"] = open;
         j["high"] = high;
         j["low"] = low;
         j["close"] = close;
+        return j;
+    }
+
+    OHLCV::OHLCV() : Timestamp(), OHLC(), volume(0) {}
+
+    OHLCV::OHLCV(const json &j) : Timestamp(j), OHLC(j) {
+        try {
+            volume = j.at("volume").get<size_t>();
+        } catch (json::exception &e) {
+            throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
+        }
+    }
+
+    OHLCV::OHLCV(timestamp_t timestamp, double open, double high, double low, double close, size_t volume) : Timestamp(
+            timestamp), OHLC(open, high, low, close), volume(volume) {}
+
+    json OHLCV::to_json() const {
+        json j = Timestamp::to_json();
+        j.merge_patch(OHLC::to_json());
+        j["volume"] = volume;
         return j;
     }
 
