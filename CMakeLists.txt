@@ -23,9 +23,10 @@ add_library(trading_common STATIC
 
 target_include_directories(trading_common
         PRIVATE
+        ${SIMPLE_COLOR_INCLUDE}
+        ${COMMON_INCLUDE}
         ${TRADING_COMMON_INCLUDE}
         ${NLOHMANN_JSON_INCLUDE}
-        ${COMMON_INCLUDE}
 )
 target_link_libraries(trading_common
         PRIVATE

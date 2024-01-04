@@ -6,10 +6,13 @@
 #define TRADING_COMMON_OHLC_H
 
 #include "nlohmann/json.hpp"
+#include <sstream>
 
 using json = nlohmann::json;
 
 namespace trading::common {
+
+    std::string epoch_to_date_string(long long epoch); // TODO: moved to common
 
     class OHLCException : public std::exception {
     private:
@@ -22,7 +25,35 @@ namespace trading::common {
         }
     };
 
-    struct OHLC {
+    typedef long long timestamp_t;
+    typedef std::string date_t;
+
+    struct Timestamp {
+        timestamp_t timestamp = 0;
+        date_t date{};
+
+        Timestamp() = default;
+
+        explicit Timestamp(size_t timestamp) : timestamp(timestamp) {
+            date = epoch_to_date_string(timestamp);
+        }
+
+        explicit Timestamp(const json &j) {
+            try {
+                timestamp = j["timestamp"];
+            } catch (json::exception &e) {
+                throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
+            }
+        }
+
+        [[nodiscard]] json to_json() const {
+            json j;
+            j["timestamp"] = timestamp;
+            return j;
+        }
+    };
+
+    struct OHLC : public Timestamp {
         double open{};
         double high{};
         double low{};
