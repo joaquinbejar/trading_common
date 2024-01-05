@@ -80,3 +80,74 @@ TEST_CASE("HeikinAshi Constructor with One OHLC", "[HeikinAshi]") {
     REQUIRE_THAT(ha.low, Catch::Matchers::WithinAbs(1.0, 0.000001));
 }
 
+TEST_CASE("Test Timestamp creation", "[Timestamp]") {
+    SECTION("Test default constructor") {
+        Timestamp t;
+        REQUIRE(t.timestamp == 0);
+    }
+
+    SECTION("Test constructor with timestamp") {
+        timestamp_t time = 1626173400; // Tiempo Unix para 2021-07-13 13:30:00 UTC
+        Timestamp t(time);
+        REQUIRE(t.timestamp == time);
+    }
+
+    SECTION("Test constructor with valid json") {
+        nlohmann::json j = { {"timestamp", 1626173400} };
+        Timestamp t(j);
+        REQUIRE(t.timestamp == 1626173400);
+    }
+
+    SECTION("Test constructor with invalid json") {
+        nlohmann::json j = { {"time", 1626173400} };  // Se usa una clave incorrecta
+        REQUIRE_THROWS_AS(Timestamp(j), OHLCException);
+    }
+}
+
+TEST_CASE("Test Timestamp conversion to json", "[Timestamp]") {
+    SECTION("Default Timestamp") {
+        Timestamp t;
+        nlohmann::json j = t.to_json();
+        REQUIRE(j["timestamp"] == 0);
+    }
+
+    SECTION("Timestamp with specific time") {
+        timestamp_t time = 1626173400; // Tiempo Unix para 2021-07-13 13:30:00 UTC
+        Timestamp t(time);
+        nlohmann::json j = t.to_json();
+        REQUIRE(j["timestamp"] == time);
+    }
+}
+
+TEST_CASE( "OHLCV class is tested", "[OHLCV]" ) {
+
+    // Testing default constructor
+    SECTION( "Default Constructor" ) {
+        OHLCV ohlcv;
+        REQUIRE( ohlcv.volume == 0);
+    }
+
+        // Testing the parameterized constructor
+    SECTION( "Parameterized Constructor" ) {
+        OHLCV ohlcv(1000, 1.5, 2.5, 0.5, 1.0, 100);
+        REQUIRE(ohlcv.timestamp == 1000);
+        REQUIRE(ohlcv.open == 1.5);
+        REQUIRE(ohlcv.high == 2.5);
+        REQUIRE(ohlcv.low == 0.5);
+        REQUIRE(ohlcv.close == 1.0);
+        REQUIRE(ohlcv.volume == 100);
+    }
+
+        // Testing to_json function
+    SECTION( "to_json function" ) {
+        OHLCV ohlcv(1000, 1.5, 2.5, 0.5, 1.0, 100);
+        json j = ohlcv.to_json();
+
+        REQUIRE(j["timestamp"] == ohlcv.timestamp);
+        REQUIRE(j["open"] == ohlcv.open);
+        REQUIRE(j["high"] == ohlcv.high);
+        REQUIRE(j["low"] == ohlcv.low);
+        REQUIRE(j["close"] == ohlcv.close);
+        REQUIRE(j["volume"] == ohlcv.volume);
+    }
+}

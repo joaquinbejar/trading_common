@@ -22,6 +22,25 @@ namespace trading::common {
         return oss.str();
     }
 
+    Timestamp::Timestamp(timestamp_t timestamp) : timestamp(timestamp) {
+            date = epoch_to_date_string(timestamp);
+    }
+
+    Timestamp::Timestamp(const json &j) {
+        try {
+            timestamp = j.at("timestamp").get<timestamp_t>();
+        } catch (json::exception &e) {
+            throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
+        }
+    }
+
+    json Timestamp::to_json() const {
+        json j;
+        j["timestamp"] = timestamp;
+        return j;
+    }
+
+
     OHLC::OHLC() : open(0), high(0), low(0), close(0) {}
 
     OHLC::OHLC(const json &j) {
