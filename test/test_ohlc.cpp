@@ -229,12 +229,18 @@ TEST_CASE("SeriesOHLCV Insertion and Access", "[SeriesOHLCV]") {
     SECTION("Accessing OHLCV by timestamp") {
         series.insert(ohlcv1);
         auto &retrievedOHLCV = series[ohlcv1.timestamp];
-        // Aquí agregar verificaciones específicas para ohlc1
+        REQUIRE(retrievedOHLCV.timestamp == ohlcv1.timestamp);
+        REQUIRE(retrievedOHLCV.open == ohlcv1.open);
+        REQUIRE(retrievedOHLCV.high == ohlcv1.high);
+        REQUIRE(retrievedOHLCV.low == ohlcv1.low);
+        REQUIRE(retrievedOHLCV.close == ohlcv1.close);
+        REQUIRE(retrievedOHLCV.volume == ohlcv1.volume);
+
     }
 
     SECTION("Accessing OHLCV by date") {
         series.insert(ohlcv1);
-        auto &retrievedOHLCV = series["2024-01-06"]; // Asumiendo que ohlc2 tiene esta fecha
+        auto &retrievedOHLCV = series["2024-01-06"];
         REQUIRE(retrievedOHLCV.timestamp == ohlcv1.timestamp);
     }
 
