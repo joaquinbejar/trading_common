@@ -199,7 +199,6 @@ TEST_CASE("OHLCV class is tested", "[OHLCV]") {
 }
 
 
-
 TEST_CASE("SeriesOHLCV Construction", "[SeriesOHLCV]") {
     SECTION("Default Constructor") {
         SeriesOHLCV series;
@@ -229,29 +228,21 @@ TEST_CASE("SeriesOHLCV Insertion and Access", "[SeriesOHLCV]") {
 
     SECTION("Accessing OHLCV by timestamp") {
         series.insert(ohlcv1);
-        auto& retrievedOHLCV = series[ohlcv1.timestamp];
+        auto &retrievedOHLCV = series[ohlcv1.timestamp];
         // Aquí agregar verificaciones específicas para ohlc1
     }
 
     SECTION("Accessing OHLCV by date") {
         series.insert(ohlcv1);
-        auto& retrievedOHLCV = series["2024-01-06"]; // Asumiendo que ohlc2 tiene esta fecha
+        auto &retrievedOHLCV = series["2024-01-06"]; // Asumiendo que ohlc2 tiene esta fecha
         REQUIRE(retrievedOHLCV.timestamp == ohlcv1.timestamp);
     }
 
     SECTION("Inserting OHLCV with same timestamp") {
         series.insert(ohlcv1);
-        for (auto &item: series) {
-            std::cout << item.second.to_json() << std::endl;
-        }
         REQUIRE(series.insert(ohlcv1));
-        for (auto &item: series) {
-            std::cout << item.second.to_json() << std::endl;
-        }
         REQUIRE(series.size() == 1);
     }
-
-
 }
 
 TEST_CASE("SeriesOHLCV to_json Functionality", "[SeriesOHLCV]") {
@@ -275,11 +266,10 @@ TEST_CASE("SeriesOHLCV iterator Functionality", "[SeriesOHLCV]") {
     SeriesOHLCV series;
     symbol_t symbol = std::make_shared<std::string>("AAPL");
     OHLCV ohlcv1(symbol, 1704510000, 1.5, 2.5, 0.5, 1.0, 100);
-    OHLCV ohlcv5(symbol, 1704520000, 2.5, 3.5, 1.5, 2.0, 200);
-    OHLCV ohlcv3(symbol, 1704530000, 3.5, 4.5, 2.5, 3.0, 300);
     OHLCV ohlcv2(symbol, 1704540000, 4.5, 5.5, 3.5, 4.0, 400);
+    OHLCV ohlcv3(symbol, 1704530000, 3.5, 4.5, 2.5, 3.0, 300);
     OHLCV ohlcv4(symbol, 1704550000, 5.5, 6.5, 4.5, 5.0, 500);
-
+    OHLCV ohlcv5(symbol, 1704520000, 2.5, 3.5, 1.5, 2.0, 200);
 
     series.insert(ohlcv2);
     series.insert(ohlcv3);
@@ -289,7 +279,7 @@ TEST_CASE("SeriesOHLCV iterator Functionality", "[SeriesOHLCV]") {
 
     SECTION("Begin") {
         SeriesOHLCV::iterator begin = series.begin();
-        const auto& [timestamp, ohlc] = *begin;
+        const auto &[timestamp, ohlc] = *begin;
         REQUIRE(ohlc.timestamp == 1704510000);
         REQUIRE(timestamp == 1704510000);
     }
@@ -297,7 +287,7 @@ TEST_CASE("SeriesOHLCV iterator Functionality", "[SeriesOHLCV]") {
     SECTION("Last element") {
         SeriesOHLCV::iterator end = series.end();
         --end;
-        const auto& [timestamp, ohlc] = *end ;
+        const auto &[timestamp, ohlc] = *end;
         REQUIRE(ohlc.timestamp == 1704550000);
         REQUIRE(timestamp == 1704550000);
     }
@@ -314,7 +304,7 @@ TEST_CASE("SeriesOHLCV iterator Functionality", "[SeriesOHLCV]") {
         int count = 0;
         for (auto it = series.begin(); it != series.end(); ++it) {
             count++;
-            const auto& [timestamp, ohlc] = *it;
+            const auto &[timestamp, ohlc] = *it;
             REQUIRE(ohlc.timestamp == 1704500000 + (count * 10000));
         }
         REQUIRE(count == 5);
@@ -324,7 +314,7 @@ TEST_CASE("SeriesOHLCV iterator Functionality", "[SeriesOHLCV]") {
         int count = 0;
         for (auto it = series.rbegin(); it != series.rend(); --it) {
             count++;
-            const auto& [timestamp, ohlc] = *it;
+            const auto &[timestamp, ohlc] = *it;
             REQUIRE(ohlc.timestamp == 1704560000 - (count * 10000));
         }
     }
