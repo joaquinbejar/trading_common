@@ -175,6 +175,11 @@ namespace trading::common {
 
 
     OHLCV &SeriesOHLCV::operator[](const std::string &date) {
+        // check date format with a regex
+        if (!::common::dates::is_valid_date_format(date)) {
+            throw OHLCException("Invalid date format: " + date);
+        }
+
         std::istringstream ss{date};
         std::tm tm{};
         ss >> std::get_time(&tm, "%Y-%m-%d"); // Here is the correct way to parse a date string

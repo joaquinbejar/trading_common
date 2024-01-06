@@ -11,5 +11,6 @@ target_include_directories(test_ohlc
 target_link_libraries(test_ohlc PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(test_ohlc PRIVATE
         trading_common
+        common
 )
 
