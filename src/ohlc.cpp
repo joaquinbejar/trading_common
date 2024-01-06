@@ -22,8 +22,25 @@ namespace trading::common {
         return oss.str();
     }
 
-    Timestamp::Timestamp(timestamp_t timestamp) : timestamp(timestamp) {
-            date = epoch_to_date_string(timestamp);
+    Symbol::Symbol() : symbol(std::make_shared<std::string>()) {}
+
+    Symbol::Symbol(symbol_t symbol) : symbol(std::move(symbol)) {}
+
+    Symbol::Symbol(const json &j) : symbol(std::make_shared<std::string>()) {
+        try {
+            *symbol = j.at("symbol").get<std::string>();
+        } catch (json::exception &e) {
+            throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
+        }
+    }
+
+    json Symbol::to_json() const {
+        return {{"symbol", *symbol}};
+    }
+
+
+    Timestamp::Timestamp(timestamp_t timestamp) : timestamp(std::move(timestamp)) {
+        date = epoch_to_date_string(timestamp);
     }
 
     Timestamp::Timestamp(const json &j) {
@@ -75,7 +92,8 @@ namespace trading::common {
         }
     }
 
-    OHLCV::OHLCV(timestamp_t timestamp, double open, double high, double low, double close, size_t volume) : Timestamp(
+    OHLCV::OHLCV(symbol_t symbol, timestamp_t timestamp, double open, double high, double low, double close,
+                 size_t volume) : Symbol(symbol), Timestamp(
             timestamp), OHLC(open, high, low, close), volume(volume) {}
 
     json OHLCV::to_json() const {
@@ -99,6 +117,124 @@ namespace trading::common {
         open = current.open;
         high = std::max({current.high, open, close});
         low = std::min({current.low, open, close});
+    }
+
+    SeriesOHLCV::SeriesOHLCV(const json &j) {
+        try {
+            for (auto &item: j) {
+                OHLCV ohlcv(item);
+                m_data.insert({ohlcv.timestamp, ohlcv});
+            }
+        } catch (json::exception &e) {
+            throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
+        }
+    }
+
+    json SeriesOHLCV::to_json() const {
+        json j;
+        for (auto &item: m_data) {
+            j.push_back(item.second.to_json());
+        }
+        return j;
+    }
+
+    bool SeriesOHLCV::empty() {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_data.empty();
+    }
+
+    size_t SeriesOHLCV::size() {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_data.size();
+    }
+
+    bool SeriesOHLCV::insert(const OHLCV &ohlc) {
+        try {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_data.insert({ohlc.timestamp, ohlc});
+            return true;
+        } catch (std::exception &e) {
+            return false;
+        }
+    }
+
+    bool SeriesOHLCV::insert(const SeriesOHLCV &ohlc) {
+        try {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_data.insert(ohlc.m_data.begin(), ohlc.m_data.end());
+            return true;
+        } catch (std::exception &e) {
+            return false;
+        }
+    }
+
+    OHLCV &SeriesOHLCV::operator[](timestamp_t timestamp) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_data[timestamp];
+    }
+
+
+    OHLCV &SeriesOHLCV::operator[](const std::string &date) {
+        std::istringstream ss{date};
+        std::tm tm{};
+        ss >> std::get_time(&tm, "%Y-%m-%d"); // Here is the correct way to parse a date string
+
+        // convert struct tm to time_t and then to system_clock::time_point
+        auto timePoint = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+
+        // use `std::chrono::system_clock::to_time_t` to convert time_point to time_t
+        auto tt = std::chrono::system_clock::to_time_t(timePoint);
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            return m_data[tt];
+        }
+    }
+
+    SeriesOHLCV::iterator::iterator(std::map<timestamp_t, OHLCV>::const_iterator it, const SeriesOHLCV *s, bool end)
+            : iter(it), series(s), isEnd(end) {}
+
+    SeriesOHLCV::iterator::~iterator() {
+        if (!isEnd) {
+            series->m_mutex.unlock();
+        }
+    }
+
+    SeriesOHLCV::iterator &SeriesOHLCV::iterator::operator++() {
+        ++iter;
+        return *this;
+    }
+
+    SeriesOHLCV::iterator &SeriesOHLCV::iterator::operator--() {
+        --iter;
+        return *this;
+    }
+
+    bool SeriesOHLCV::iterator::operator!=(const iterator &other) const {
+        return iter != other.iter;
+    }
+
+    const std::pair<const timestamp_t, OHLCV> &SeriesOHLCV::iterator::operator*() const {
+        return *iter;
+    }
+
+
+    SeriesOHLCV::iterator SeriesOHLCV::begin() const {
+        m_mutex.lock();
+        return {m_data.begin(), this};
+    }
+
+
+    SeriesOHLCV::iterator SeriesOHLCV::end() const {
+        return {m_data.end(), this, true};
+    }
+
+    SeriesOHLCV::iterator SeriesOHLCV::rbegin() const {
+        m_mutex.lock();
+        return {--m_data.end(), this};
+    }
+
+    SeriesOHLCV::iterator SeriesOHLCV::rend() const {
+        return {m_data.begin(), this, true};
     }
 
 }
