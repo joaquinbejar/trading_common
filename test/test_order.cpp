@@ -31,7 +31,8 @@ TEST_CASE("Order struct tests", "[Order]") {
                 {"filled_at_price", 500},
                 {"limit_price", 500},
                 {"id", "123"},
-                {"type", "market"}
+                {"type", "market"},
+                {"status", "open"}
         };
 
         Order order(j);
@@ -44,13 +45,12 @@ TEST_CASE("Order struct tests", "[Order]") {
         REQUIRE(order.limit_price == 500);
         REQUIRE(order.id == "123");
         REQUIRE(order.type == Type::MARKET);
-
-
+        REQUIRE(order.status == Status::OPEN);
     }
 
     SECTION("Order Constructor to json test"){
         symbol_t symbol = std::make_shared<std::string>("BTC");
-        Order order(100, 200, symbol, Side::BUY, 0, 500, 500, "123", Type::MARKET);
+        Order order(100, 200, symbol, Side::BUY, 0, 500, 500, "123", Type::MARKET, Status::OPEN);
 
         json j = order.to_json();
         REQUIRE(j["timestamp"] == 100);
@@ -62,6 +62,7 @@ TEST_CASE("Order struct tests", "[Order]") {
         REQUIRE(j["limit_price"] == 500);
         REQUIRE(j["id"] == "123");
         REQUIRE(j["type"] == "MARKET");
+        REQUIRE(j["status"] == "OPEN");
     }
 
     SECTION("Order to json test"){

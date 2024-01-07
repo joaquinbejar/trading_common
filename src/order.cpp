@@ -14,14 +14,18 @@ namespace trading::order {
         return message.c_str();
     }
 
-    Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled,
-                 price_t filled_at_price, price_t limit_price, id_t id, Type type) : timestamp(timestamp),
-                                                                                     quantity(quantity),
-                                                                                     symbol(std::move(symbol)),
-                                                                                     side(side), filled(filled),
-                                                                                     filled_at_price(filled_at_price),
-                                                                                     limit_price(limit_price),
-                                                                                     id(std::move(id)), type(type) {}
+    Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side,
+                 size_t filled, price_t filled_at_price, price_t limit_price, id_t id,
+                 Type type, Status status) : timestamp(timestamp),
+                                             quantity(quantity),
+                                             symbol(std::move(symbol)),
+                                             side(side),
+                                             filled(filled),
+                                             filled_at_price(filled_at_price),
+                                             limit_price(limit_price),
+                                             id(std::move(id)),
+                                             type(type),
+                                             status(status) {}
 
     Order::Order(json &j) {
         try {
@@ -40,13 +44,25 @@ namespace trading::order {
             } else {
                 side = Side::NONE;
             }
-            std::string type_str = ::common::to_upper(j["type"]);
+            std::string type_str = ::common::to_upper(j.at("type").get<std::string>());
             if (type_str == "MARKET") {
                 type = Type::MARKET;
             } else if (type_str == "LIMIT") {
                 type = Type::LIMIT;
             } else {
                 type = Type::NONE;
+            }
+            std::string status_str = ::common::to_upper(j.at("status").get<std::string>());
+            if (status_str == "OPEN") {
+                status = Status::OPEN;
+            } else if (status_str == "CLOSED") {
+                status = Status::CLOSED;
+            } else if (status_str == "FILLED") {
+                status = Status::FILLED;
+            } else if (status_str == "CANCELED") {
+                status = Status::CANCELED;
+            } else {
+                status = Status::NONE;
             }
         } catch (json::exception &e) {
             throw OrderException("Error parsing Order json: " + std::string(e.what()));
@@ -56,6 +72,7 @@ namespace trading::order {
     void Order::check_match_price(OHLC &ohlc) {
         if (ohlc.low <= this->limit_price <= ohlc.high && type == Type::LIMIT) {
             this->filled_at_price = this->limit_price;
+            status = Status::FILLED;
         }
     }
 
@@ -67,6 +84,7 @@ namespace trading::order {
             } else {
                 this->filled = ohlc.volume;
             }
+            status = Status::FILLED;
         }
     }
 
@@ -99,6 +117,23 @@ namespace trading::order {
                 break;
             default:
                 j["type"] = "NONE";
+                break;
+        }
+        switch (status) {
+            case Status::OPEN:
+                j["status"] = "OPEN";
+                break;
+            case Status::CLOSED:
+                j["status"] = "CLOSED";
+                break;
+            case Status::FILLED:
+                j["status"] = "FILLED";
+                break;
+            case Status::CANCELED:
+                j["status"] = "CANCELED";
+                break;
+            default:
+                j["status"] = "NONE";
                 break;
         }
         return j;

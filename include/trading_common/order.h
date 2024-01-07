@@ -40,6 +40,14 @@ namespace trading::order {
         LIMIT = 2
     };
 
+    enum class Status {
+        NONE = 0,
+        OPEN = 1,
+        CLOSED = 2,
+        FILLED = 3,
+        CANCELED = 4
+    };
+
 
     struct Order {
         timestamp_t timestamp = 0;
@@ -51,12 +59,13 @@ namespace trading::order {
         price_t limit_price = 0;
         id_t id = ::common::key_generator();
         Type type = Type::NONE;
+        Status status = Status::NONE;
 
         Order() = default;
 
         Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled,
               price_t filled_at_price,
-              price_t limit_price, id_t id, Type type);
+              price_t limit_price, id_t id, Type type, Status status);
 
         explicit Order(json &j);
 
