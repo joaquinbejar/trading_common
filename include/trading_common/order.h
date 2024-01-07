@@ -8,6 +8,10 @@
 #include <cstdlib>
 #include <string>
 #include <common/common.h>
+#include <trading_common/ohlc.h>
+
+using OHLC = trading::common::OHLC;
+using OHLCV = trading::common::OHLCV;
 
 namespace trading::order {
     typedef long long timestamp_t;
@@ -43,16 +47,22 @@ namespace trading::order {
         symbol_t symbol = std::make_shared<std::string>();
         Side side = Side::NONE;
         size_t filled = 0;
-        price_t price = 0;
+        price_t filled_at_price = 0;
         price_t limit_price = 0;
         id_t id = ::common::key_generator();
         Type type = Type::NONE;
+
         Order() = default;
 
-        Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled, price_t price,
+        Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled,
+              price_t filled_at_price,
               price_t limit_price, id_t id, Type type);
 
         explicit Order(json &j);
+
+        void check_match_price(OHLC &ohlc);
+
+        void check_match_price(OHLCV &ohlc);
 
         [[nodiscard]] json to_json() const;
     };

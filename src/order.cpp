@@ -14,10 +14,14 @@ namespace trading::order {
         return message.c_str();
     }
 
-    Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled, price_t price,
-            price_t limit_price, id_t id, Type type) : timestamp(timestamp), quantity(quantity), symbol(std::move(symbol)),
-                                                        side(side), filled(filled), price(price),
-                                                        limit_price(limit_price), id(std::move(id)), type(type) {}
+    Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled,
+                 price_t filled_at_price, price_t limit_price, id_t id, Type type) : timestamp(timestamp),
+                                                                                     quantity(quantity),
+                                                                                     symbol(std::move(symbol)),
+                                                                                     side(side), filled(filled),
+                                                                                     filled_at_price(filled_at_price),
+                                                                                     limit_price(limit_price),
+                                                                                     id(std::move(id)), type(type) {}
 
     Order::Order(json &j) {
         try {
@@ -25,7 +29,7 @@ namespace trading::order {
             quantity = j.at("quantity").get<size_t>();
             *symbol = j.at("symbol").get<std::string>();
             filled = j.at("filled").get<size_t>();
-            price = j.at("price").get<price_t>();
+            filled_at_price = j.at("filled_at_price").get<price_t>();
             limit_price = j.at("limit_price").get<price_t>();
             id = j.at("id").get<id_t>();
             std::string side_str = ::common::to_upper(j["side"]);
@@ -49,13 +53,30 @@ namespace trading::order {
         }
     }
 
+    void Order::check_match_price(OHLC &ohlc) {
+        if (ohlc.low <= this->limit_price <= ohlc.high && type == Type::LIMIT) {
+            this->filled_at_price = this->limit_price;
+        }
+    }
+
+    void Order::check_match_price(OHLCV &ohlc) {
+        if (ohlc.low <= this->limit_price <= ohlc.high && type == Type::LIMIT) {
+            this->filled_at_price = this->limit_price;
+            if (ohlc.volume >= this->quantity) {
+                this->filled = this->quantity;
+            } else {
+                this->filled = ohlc.volume;
+            }
+        }
+    }
+
     json Order::to_json() const {
         json j;
         j["timestamp"] = timestamp;
         j["quantity"] = quantity;
         j["symbol"] = *symbol;
         j["filled"] = filled;
-        j["price"] = price;
+        j["filled_at_price"] = filled_at_price;
         j["limit_price"] = limit_price;
         j["id"] = id;
         switch (side) {

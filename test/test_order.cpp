@@ -28,7 +28,7 @@ TEST_CASE("Order struct tests", "[Order]") {
                 {"symbol", "BTC"},
                 {"side", "buy"},
                 {"filled", 0},
-                {"price", 500},
+                {"filled_at_price", 500},
                 {"limit_price", 500},
                 {"id", "123"},
                 {"type", "market"}
@@ -40,7 +40,7 @@ TEST_CASE("Order struct tests", "[Order]") {
         REQUIRE(*order.symbol == "BTC");
         REQUIRE(order.side == Side::BUY);
         REQUIRE(order.filled == 0);
-        REQUIRE(order.price == 500);
+        REQUIRE(order.filled_at_price == 500);
         REQUIRE(order.limit_price == 500);
         REQUIRE(order.id == "123");
         REQUIRE(order.type == Type::MARKET);
@@ -58,7 +58,7 @@ TEST_CASE("Order struct tests", "[Order]") {
         REQUIRE(j["symbol"] == "BTC");
         REQUIRE(j["side"] == "BUY");
         REQUIRE(j["filled"] == 0);
-        REQUIRE(j["price"] == 500);
+        REQUIRE(j["filled_at_price"] == 500);
         REQUIRE(j["limit_price"] == 500);
         REQUIRE(j["id"] == "123");
         REQUIRE(j["type"] == "MARKET");
@@ -72,7 +72,7 @@ TEST_CASE("Order struct tests", "[Order]") {
         order.symbol = symbol;
         order.side = Side::BUY;
         order.filled = 0;
-        order.price = 500;
+        order.filled_at_price = 500;
         order.limit_price = 500;
         order.id = "123";
         order.type = Type::MARKET;
@@ -83,7 +83,7 @@ TEST_CASE("Order struct tests", "[Order]") {
         REQUIRE(j["symbol"] == "BTC");
         REQUIRE(j["side"] == "BUY");
         REQUIRE(j["filled"] == 0);
-        REQUIRE(j["price"] == 500);
+        REQUIRE(j["filled_at_price"] == 500);
         REQUIRE(j["limit_price"] == 500);
         REQUIRE(j["id"] == "123");
         REQUIRE(j["type"] == "MARKET");
