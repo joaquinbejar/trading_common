@@ -4,6 +4,8 @@
 
 #include <trading_common/order.h>
 
+#include <utility>
+
 namespace trading::order {
 
     OrderException::OrderException(std::string message) : message(std::move(message)) {}
@@ -13,9 +15,9 @@ namespace trading::order {
     }
 
     Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled, price_t price,
-            price_t limit_price, id_t id, Type type) : timestamp(timestamp), quantity(quantity), symbol(symbol),
+            price_t limit_price, id_t id, Type type) : timestamp(timestamp), quantity(quantity), symbol(std::move(symbol)),
                                                         side(side), filled(filled), price(price),
-                                                        limit_price(limit_price), id(id), type(type) {}
+                                                        limit_price(limit_price), id(std::move(id)), type(type) {}
 
     Order::Order(json &j) {
         try {
