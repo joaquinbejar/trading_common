@@ -6,21 +6,26 @@
 
 namespace trading::order {
 
-    OHLCException::OHLCException(std::string message) : message(std::move(message)) {}
+    OrderException::OrderException(std::string message) : message(std::move(message)) {}
 
-    [[nodiscard]] const char *OHLCException::what() const noexcept {
+    [[nodiscard]] const char *OrderException::what() const noexcept {
         return message.c_str();
     }
 
+    Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled, price_t price,
+            price_t limit_price, id_t id, Type type) : timestamp(timestamp), quantity(quantity), symbol(symbol),
+                                                        side(side), filled(filled), price(price),
+                                                        limit_price(limit_price), id(id), type(type) {}
+
     Order::Order(json &j) {
         try {
-            timestamp = j["timestamp"];
-            quantity = j["quantity"];
-            symbol = j["symbol"];
-            filled = j["filled"];
-            price = j["price"];
-            limit_price = j["limit_price"];
-            id = j["id"];
+            timestamp = j.at("timestamp").get<timestamp_t>();
+            quantity = j.at("quantity").get<size_t>();
+            *symbol = j.at("symbol").get<std::string>();
+            filled = j.at("filled").get<size_t>();
+            price = j.at("price").get<price_t>();
+            limit_price = j.at("limit_price").get<price_t>();
+            id = j.at("id").get<id_t>();
             std::string side_str = ::common::to_upper(j["side"]);
             if (side_str == "BUY") {
                 side = Side::BUY;
@@ -38,7 +43,7 @@ namespace trading::order {
                 type = Type::NONE;
             }
         } catch (json::exception &e) {
-            throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
+            throw OrderException("Error parsing Order json: " + std::string(e.what()));
         }
     }
 
@@ -46,7 +51,7 @@ namespace trading::order {
         json j;
         j["timestamp"] = timestamp;
         j["quantity"] = quantity;
-        j["symbol"] = symbol;
+        j["symbol"] = *symbol;
         j["filled"] = filled;
         j["price"] = price;
         j["limit_price"] = limit_price;

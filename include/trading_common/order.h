@@ -10,11 +10,16 @@
 #include <common/common.h>
 
 namespace trading::order {
-    class OHLCException : public std::exception {
+    typedef long long timestamp_t;
+    typedef std::shared_ptr<std::string> symbol_t;
+    typedef std::string id_t;
+    typedef double price_t;
+
+    class OrderException : public std::exception {
     private:
         std::string message{};
     public:
-        explicit OHLCException(std::string message);
+        explicit OrderException(std::string message);
 
         [[nodiscard]] const char *what() const noexcept override;
     };
@@ -33,20 +38,23 @@ namespace trading::order {
 
 
     struct Order {
-        size_t timestamp = 0;
+        timestamp_t timestamp = 0;
         size_t quantity = 0;
-        std::string symbol{};
+        symbol_t symbol = std::make_shared<std::string>();
         Side side = Side::NONE;
         size_t filled = 0;
-        double price = 0;
-        double limit_price = 0;
-        std::string id = ::common::key_generator();
+        price_t price = 0;
+        price_t limit_price = 0;
+        id_t id = ::common::key_generator();
         Type type = Type::NONE;
         Order() = default;
 
-        Order(json &j);
+        Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled, price_t price,
+              price_t limit_price, id_t id, Type type);
 
-        json to_json() const;
+        explicit Order(json &j);
+
+        [[nodiscard]] json to_json() const;
     };
 
 }
