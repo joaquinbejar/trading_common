@@ -8,13 +8,22 @@
 #include <cstdlib>
 #include <string>
 #include <common/common.h>
+#include <trading_common/ohlc.h>
+
+using OHLC = trading::common::OHLC;
+using OHLCV = trading::common::OHLCV;
 
 namespace trading::order {
-    class OHLCException : public std::exception {
+    typedef unsigned long long timestamp_t;
+    typedef std::shared_ptr<std::string> symbol_t;
+    typedef std::string id_t;
+    typedef double price_t;
+
+    class OrderException : public std::exception {
     private:
         std::string message{};
     public:
-        explicit OHLCException(std::string message);
+        explicit OrderException(std::string message);
 
         [[nodiscard]] const char *what() const noexcept override;
     };
@@ -31,22 +40,45 @@ namespace trading::order {
         LIMIT = 2
     };
 
+    enum class Status {
+        NONE = 0,
+        OPEN = 1,
+        CLOSED = 2,
+        FILLED = 3,
+        CANCELED = 4
+    };
+
 
     struct Order {
-        size_t timestamp = 0;
+        id_t id = ::common::key_generator();
+        timestamp_t timestamp = ::common::dates::get_unix_timestamp();
         size_t quantity = 0;
-        std::string symbol{};
+        symbol_t symbol = std::make_shared<std::string>();
         Side side = Side::NONE;
         size_t filled = 0;
-        double price = 0;
-        double limit_price = 0;
-        std::string id = ::common::key_generator();
+        price_t filled_at_price = 0;
+        price_t limit_price = 0;
+
         Type type = Type::NONE;
+        Status status = Status::NONE;
+
         Order() = default;
 
-        Order(json &j);
+        Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled,
+              price_t filled_at_price,
+              price_t limit_price, id_t id, Type type, Status status);
 
-        json to_json() const;
+        explicit Order(json &j);
+
+        void check_match_price(OHLC &ohlc);
+
+        void check_match_price(OHLCV &ohlc);
+
+        bool validate() const;
+
+        [[nodiscard]] json to_json() const;
+
+
     };
 
 }

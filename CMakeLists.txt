@@ -30,6 +30,7 @@ target_include_directories(trading_common
 )
 target_link_libraries(trading_common
         PRIVATE
+        common
 )
 
 install(TARGETS trading_common DESTINATION lib)
