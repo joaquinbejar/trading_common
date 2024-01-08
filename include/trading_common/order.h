@@ -28,6 +28,11 @@ namespace trading::order {
         [[nodiscard]] const char *what() const noexcept override;
     };
 
+    struct ValidateResult {
+        bool success = false;
+        std::string message{};
+    };
+
     enum class Side {
         NONE = 0,
         BUY = 1,
@@ -74,7 +79,7 @@ namespace trading::order {
 
         void check_match_price(OHLCV &ohlc);
 
-        bool validate() const;
+        ValidateResult validate() const;
 
         [[nodiscard]] json to_json() const;
 

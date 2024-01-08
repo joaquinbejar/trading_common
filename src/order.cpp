@@ -145,8 +145,8 @@ namespace trading::order {
         return j;
     }
 
-    bool Order::validate() const {
-
+    ValidateResult Order::validate() const {
+        ValidateResult result;
         if (timestamp > 0
             && quantity == 0
             && symbol->empty()
@@ -157,64 +157,77 @@ namespace trading::order {
             && !id.empty()
             && type == Type::NONE
             && status == Status::NONE) {
-            return true;
+            result.success = true;
         }
 
         if (quantity == 0) {
-            return false;
+            result.success = false;
+            result.message = "Quantity is 0";
         }
         if (symbol == nullptr) {
-            return false;
+            result.success = false;
+            result.message = "Symbol is null";
         }
         if (symbol->empty()) {
-            return false;
+            result.success = false;
+            result.message = "Symbol is empty";
         }
         if (side == Side::NONE) {
-            return false;
+            result.success = false;
+            result.message = "Side is NONE";
         }
         if (type == Type::NONE) {
-            return false;
+            result.success = false;
+            result.message = "Type is NONE";
         }
         if (status == Status::NONE) {
-            return false;
+            result.success = false;
+            result.message = "Status is NONE";
         }
 
         if ( type == Type::LIMIT && limit_price == 0) {
-            return false;
+            result.success = false;
+            result.message = "Type is LIMIT but limit_price is 0";
         }
 
         if (limit_price != 0 && type != Type::LIMIT) {
-            return false;
+            result.success = false;
+            result.message = "Type is not LIMIT but limit_price is not 0";
         }
 
         if (filled != 0 && filled_at_price == 0) {
-            return false;
+            result.success = false;
+            result.message = "Filled is not 0 but filled_at_price is 0";
         }
 
         if (filled_at_price != 0 && filled == 0) {
-            return false;
+            result.success = false;
+            result.message = "Filled_at_price is not 0 but filled is 0";
         }
 
         switch (status) {
             case Status::OPEN:
                 if (filled != 0) {
-                    return false;
+                    result.success = false;
+                    result.message = "Status is OPEN but filled is not 0";
                 }
                 break;
             case Status::CLOSED:
                 break;
             case Status::FILLED:
                 if (filled == 0) {
-                    return false;
+                    result.success = false;
+                    result.message = "Status is FILLED but filled is 0";
                 }
                 break;
             case Status::CANCELED:
                 break;
             default:
-                return false;
+                result.success = false;
+                result.message = "Status is NONE";
 
         }
-        return true;
+        result.success = true;
+        return result;
     }
-
 }
