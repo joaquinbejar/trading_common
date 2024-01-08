@@ -29,13 +29,19 @@ namespace trading::order {
 
     Order::Order(json &j) {
         try {
-            timestamp = j.at("timestamp").get<timestamp_t>();
+            if (j.contains("timestamp") && j["timestamp"].is_number()) {
+                timestamp = j.at("timestamp").get<timestamp_t>();
+            }
+            if (j.contains("id") && j["id"].is_string()) {
+                id = j.at("id").get<id_t>();
+            }
+
             quantity = j.at("quantity").get<size_t>();
             *symbol = j.at("symbol").get<std::string>();
             filled = j.at("filled").get<size_t>();
             filled_at_price = j.at("filled_at_price").get<price_t>();
             limit_price = j.at("limit_price").get<price_t>();
-            id = j.at("id").get<id_t>();
+
             std::string side_str = ::common::to_upper(j["side"]);
             if (side_str == "BUY") {
                 side = Side::BUY;
@@ -137,6 +143,78 @@ namespace trading::order {
                 break;
         }
         return j;
+    }
+
+    bool Order::validate() const {
+
+        if (timestamp > 0
+            && quantity == 0
+            && symbol->empty()
+            && side == Side::NONE
+            && filled == 0
+            && filled_at_price == 0
+            && limit_price == 0
+            && !id.empty()
+            && type == Type::NONE
+            && status == Status::NONE) {
+            return true;
+        }
+
+        if (quantity == 0) {
+            return false;
+        }
+        if (symbol == nullptr) {
+            return false;
+        }
+        if (symbol->empty()) {
+            return false;
+        }
+        if (side == Side::NONE) {
+            return false;
+        }
+        if (type == Type::NONE) {
+            return false;
+        }
+        if (status == Status::NONE) {
+            return false;
+        }
+
+        if ( type == Type::LIMIT && limit_price == 0) {
+            return false;
+        }
+
+        if (limit_price != 0 && type != Type::LIMIT) {
+            return false;
+        }
+
+        if (filled != 0 && filled_at_price == 0) {
+            return false;
+        }
+
+        if (filled_at_price != 0 && filled == 0) {
+            return false;
+        }
+
+        switch (status) {
+            case Status::OPEN:
+                if (filled != 0) {
+                    return false;
+                }
+                break;
+            case Status::CLOSED:
+                break;
+            case Status::FILLED:
+                if (filled == 0) {
+                    return false;
+                }
+                break;
+            case Status::CANCELED:
+                break;
+            default:
+                return false;
+
+        }
+        return true;
     }
 
 }

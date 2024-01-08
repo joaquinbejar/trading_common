@@ -14,7 +14,7 @@ using OHLC = trading::common::OHLC;
 using OHLCV = trading::common::OHLCV;
 
 namespace trading::order {
-    typedef long long timestamp_t;
+    typedef unsigned long long timestamp_t;
     typedef std::shared_ptr<std::string> symbol_t;
     typedef std::string id_t;
     typedef double price_t;
@@ -50,14 +50,15 @@ namespace trading::order {
 
 
     struct Order {
-        timestamp_t timestamp = 0;
+        id_t id = ::common::key_generator();
+        timestamp_t timestamp = ::common::dates::get_unix_timestamp();
         size_t quantity = 0;
         symbol_t symbol = std::make_shared<std::string>();
         Side side = Side::NONE;
         size_t filled = 0;
         price_t filled_at_price = 0;
         price_t limit_price = 0;
-        id_t id = ::common::key_generator();
+
         Type type = Type::NONE;
         Status status = Status::NONE;
 
@@ -73,7 +74,11 @@ namespace trading::order {
 
         void check_match_price(OHLCV &ohlc);
 
+        bool validate() const;
+
         [[nodiscard]] json to_json() const;
+
+
     };
 
 }

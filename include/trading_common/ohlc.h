@@ -15,6 +15,9 @@
 using json = nlohmann::json;
 
 namespace trading::common {
+    typedef unsigned long long timestamp_t;
+    typedef std::string date_t;
+    typedef std::shared_ptr<std::string> symbol_t;
 
     std::string epoch_to_date_string(long long epoch); // TODO: moved to common
 
@@ -28,10 +31,6 @@ namespace trading::common {
             return message.c_str();
         }
     };
-
-    typedef long long timestamp_t;
-    typedef std::string date_t;
-    typedef std::shared_ptr<std::string> symbol_t;
 
     struct Symbol {
         symbol_t symbol{};
@@ -132,25 +131,25 @@ namespace trading::common {
         public:
             iterator(std::map<timestamp_t, OHLCV>::const_iterator it, const SeriesOHLCV *s, bool end = false);
 
-            ~iterator() ;
+            ~iterator();
 
-            iterator &operator++() ;
+            iterator &operator++();
 
-            iterator &operator--() ;
+            iterator &operator--();
 
-            bool operator!=(const iterator &other) const ;
+            bool operator!=(const iterator &other) const;
 
             const std::pair<const timestamp_t, OHLCV> &operator*() const;
 
         };
 
-        iterator begin() const ;
+        iterator begin() const;
 
-        iterator rbegin() const ;
+        iterator rbegin() const;
 
-        iterator end() const ;
+        iterator end() const;
 
-        iterator rend() const ;
+        iterator rend() const;
 
     };
 }
