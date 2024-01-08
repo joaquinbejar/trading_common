@@ -7,9 +7,9 @@ VERSION 0.1.0
 This is a common library for give support to other libraries with common functions and classes for trading.
 
 Classes:
-    - OHLCV 
-    - HeikinAshi
-    - SeriesOHLCV
-    - Order
-    - Position
-    - PnL
+- OHLCV
+- HeikinAshi
+- SeriesOHLCV
+- Order
+- Position
+- PnL
