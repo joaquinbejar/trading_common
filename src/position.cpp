@@ -66,7 +66,7 @@ namespace trading::position {
     }
 
     price_t Position::get_pnl() const {
-        if (current_price == 0)
+        if (current_price == 0 && side != Side::NONE)
             throw std::runtime_error("Current price is 0");
         if (side == Side::LONG) {
             return (price_t) balance * (current_price - entry_price);
@@ -92,7 +92,7 @@ namespace trading::position {
                 j["side"] = "LONG";
                 break;
             case Side::SHORT:
-                j["side"] = "LONG";
+                j["side"] = "SHORT";
                 break;
             default:
                 j["side"] = "NONE";
@@ -119,53 +119,48 @@ namespace trading::position {
         if (symbol->empty()) {
             symbol = order.symbol;
         } else if (*symbol != *order.symbol) {
-
             result.message = "Symbol is not the same" + *symbol + "!=" + *order.symbol;
             result.success = false;
             return result;
         }
 
-
-        std::cout << "balance:" << balance << std::endl;
         // position is empty
         if (balance == 0) {
-            std::cout << "balance == 0" << std::endl;
             if (order.side == trading::order::Side::BUY) {
-                std::cout << "Order side is BUY" << std::endl;
                 this->balance = order.filled;
                 entry_price = order.filled_at_price;
                 side = Side::LONG;
-                result.pnl = pnl = balance * current_price;
+//                result.pnl = pnl = (price_t) balance * current_price;
+                result.pnl = pnl = get_pnl();
                 result.success = true;
             } else if (order.side == trading::order::Side::SELL) {
-                std::cout << "Order side is SELL" << std::endl;
                 this->balance = order.quantity;
                 entry_price = order.filled_at_price;
                 side = Side::SHORT;
-                result.pnl = pnl = balance * current_price;
+                result.pnl = pnl = get_pnl();
                 result.success = true;
             } else {
-                std::cout << "Order side is NONE" << std::endl;
                 result.message = "Invalid side";
                 result.success = false;
             }
         } else if (side == Side::LONG) {
             if (order.side == trading::order::Side::BUY) {
                 auto new_balance = balance + order.filled;
-                entry_price = (entry_price * balance + order.filled_at_price * order.filled) / new_balance;
+                entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
+                              (price_t) new_balance;
                 balance = new_balance;
-                result.pnl = pnl = balance * current_price;
+                result.pnl = pnl = get_pnl();
                 result.success = true;
             } else if (order.side == trading::order::Side::SELL) {
                 if (balance >= order.filled) {
                     balance -= order.filled;
-                    result.pnl = pnl = balance * entry_price;
+                    result.pnl = pnl = get_pnl();
                     result.success = true;
                 } else {
                     balance = order.filled - balance;
                     entry_price = order.filled_at_price;
                     side = Side::SHORT;
-                    result.pnl = pnl = balance * entry_price;
+                    result.pnl = pnl = get_pnl();
                     result.success = true;
                 }
             } else {
@@ -176,20 +171,21 @@ namespace trading::position {
             if (order.side == trading::order::Side::BUY) {
                 if (balance >= order.filled) {
                     balance -= order.filled;
-                    result.pnl = pnl = balance * entry_price;
+                    result.pnl = pnl = get_pnl();
                     result.success = true;
                 } else {
                     balance = order.filled - balance;
                     entry_price = order.filled_at_price;
                     side = Side::LONG;
-                    result.pnl = pnl = balance * entry_price;
+                    result.pnl = pnl = get_pnl();
                     result.success = true;
                 }
             } else if (order.side == trading::order::Side::SELL) {
                 auto new_balance = balance + order.filled;
-                entry_price = (entry_price * balance + order.filled_at_price * order.filled) / new_balance;
+                entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
+                              (price_t) new_balance;
                 balance = new_balance;
-                result.pnl = pnl = balance * current_price;
+                result.pnl = pnl = get_pnl();
                 result.success = true;
             } else {
                 result.message = "Invalid side";

@@ -51,7 +51,7 @@ namespace trading::position {
 
         void set_current_price(price_t cp);
 
-        price_t get_pnl() const;
+        [[nodiscard]] price_t get_pnl() const;
 
         [[nodiscard]] json to_json() const;
 
