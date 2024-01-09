@@ -101,7 +101,7 @@ namespace trading::position {
         return j;
     }
 
-    ApplyOrderResult Position::apply_order(const trading::order::Order &order) {
+    Position::ApplyOrderResult Position::apply_order(const trading::order::Order &order) {
 
         ApplyOrderResult result;
         if (!order.validate().success) {
@@ -130,7 +130,6 @@ namespace trading::position {
                 this->balance = order.filled;
                 entry_price = order.filled_at_price;
                 side = Side::LONG;
-//                result.pnl = pnl = (price_t) balance * current_price;
                 result.pnl = pnl = get_pnl();
                 result.success = true;
             } else if (order.side == trading::order::Side::SELL) {

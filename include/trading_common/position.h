@@ -24,13 +24,19 @@ namespace trading::position {
         SHORT = 2
     };
 
-    struct ApplyOrderResult {
+    struct Result {
         bool success = false;
         std::string message{};
-        price_t pnl = 0;
     };
 
+
+
     struct Position {
+
+        struct ApplyOrderResult : public Result {
+            price_t pnl = 0;
+        };
+
         id_t id = ::common::key_generator();
         timestamp_t timestamp = ::common::dates::get_unix_timestamp();
         size_t balance = 0;
