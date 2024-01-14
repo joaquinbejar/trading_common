@@ -140,14 +140,10 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
                 {"status",          "closed"}
         };
         Order order2(j2);
-        std::cout << "Position PRE: " << position.to_json().dump(4) << std::endl;
         REQUIRE(position.validate());
         position.set_current_price(current_prince);
         Position::ApplyOrderResult result1 = position.apply_order(order1);
-        std::cout << "result1: " << result1.message << std::endl;
         Position::ApplyOrderResult result2 = position.apply_order(order2);
-        std::cout << "result2: " << result2.message << std::endl;
-        std::cout << "Position POST: " << position.to_json().dump(4) << std::endl;
 
         REQUIRE(position.validate());
         REQUIRE(result2.message.empty());
@@ -186,10 +182,7 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
         REQUIRE(position.validate());
         position.set_current_price(current_prince);
         Position::ApplyOrderResult result1 = position.apply_order(order1);
-        std::cout << "result1: " << result1.message << std::endl;
         Position::ApplyOrderResult result2 = position.apply_order(order2);
-        std::cout << "result2: " << result2.message << std::endl;
-        std::cout << "Position POST: " << position.to_json().dump(4) << std::endl;
 
         REQUIRE(position.validate());
         REQUIRE(result2.message.empty());
@@ -201,8 +194,167 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
         REQUIRE(*position.symbol == *order1.symbol);
     }
 
-    // TODO: long position with sell order
-    // TODO: long position with bigger sell order
+    SECTION("Apply SELL Order to Long Position") {
+        price_t current_prince = 600;
+        json j1 = {
+                {"quantity",        200},
+                {"symbol",          "BTC"},
+                {"side",            "buy"},
+                {"filled",          200},
+                {"filled_at_price", 500},
+                {"limit_price",     500},
+                {"type",            "limit"},
+                {"status",          "closed"}
+        };
+        Order order1(j1);
+        json j2 = {
+                {"quantity",        100},
+                {"symbol",          "BTC"},
+                {"side",            "sell"},
+                {"filled",          100},
+                {"filled_at_price", 450},
+                {"limit_price",     0},
+                {"type",            "market"},
+                {"status",          "closed"}
+        };
+        Order order2(j2);
+        REQUIRE(position.validate());
+        position.set_current_price(current_prince);
+        Position::ApplyOrderResult result1 = position.apply_order(order1);
+        Position::ApplyOrderResult result2 = position.apply_order(order2);
+
+        REQUIRE(position.validate());
+        REQUIRE(result2.message.empty());
+        REQUIRE(result2.success);
+        REQUIRE(position.balance == 100);
+        REQUIRE(position.pnl == 100 * (current_prince - position.entry_price));
+        REQUIRE(position.entry_price == (double) ((200 * 500) - (100 * 450)) / 100);
+        REQUIRE(position.side == Side::LONG);
+        REQUIRE(*position.symbol == *order1.symbol);
+    }
+
+    SECTION("Apply BIGGER SELL Order to Long Position 1") {
+        price_t current_prince = 600;
+        json j1 = {
+                {"quantity",        200},
+                {"symbol",          "BTC"},
+                {"side",            "buy"},
+                {"filled",          200},
+                {"filled_at_price", 500},
+                {"limit_price",     500},
+                {"type",            "limit"},
+                {"status",          "closed"}
+        };
+        Order order1(j1);
+        json j2 = {
+                {"quantity",        500},
+                {"symbol",          "BTC"},
+                {"side",            "sell"},
+                {"filled",          400},
+                {"filled_at_price", 450},
+                {"limit_price",     0},
+                {"type",            "market"},
+                {"status",          "closed"}
+        };
+        Order order2(j2);
+        REQUIRE(position.validate());
+        position.set_current_price(current_prince);
+        Position::ApplyOrderResult result1 = position.apply_order(order1);
+        Position::ApplyOrderResult result2 = position.apply_order(order2);
+
+        REQUIRE(position.validate());
+        REQUIRE(result2.message.empty());
+        REQUIRE(result2.success);
+        REQUIRE(position.balance == 200);
+        REQUIRE(position.entry_price == 450);
+        REQUIRE(position.pnl == -40000);
+        REQUIRE(position.side == Side::SHORT);
+        REQUIRE(*position.symbol == *order1.symbol);
+    }
+
+    SECTION("Apply BIGGER SELL Order to Long Position 2") {
+        price_t current_prince = 600;
+        json j1 = {
+                {"quantity",        200},
+                {"symbol",          "BTC"},
+                {"side",            "buy"},
+                {"filled",          200},
+                {"filled_at_price", 500},
+                {"limit_price",     500},
+                {"type",            "limit"},
+                {"status",          "closed"}
+        };
+        Order order1(j1);
+        json j2 = {
+                {"quantity",        400},
+                {"symbol",          "BTC"},
+                {"side",            "sell"},
+                {"filled",          400},
+                {"filled_at_price", 600},
+                {"limit_price",     0},
+                {"type",            "market"},
+                {"status",          "closed"}
+        };
+        Order order2(j2);
+        REQUIRE(position.validate());
+        position.set_current_price(current_prince);
+        Position::ApplyOrderResult result1 = position.apply_order(order1);
+        Position::ApplyOrderResult result2 = position.apply_order(order2);
+
+        REQUIRE(position.validate());
+        REQUIRE(result2.message.empty());
+        REQUIRE(result2.success);
+        REQUIRE(position.balance == 200);
+        REQUIRE(position.entry_price == 600);
+        REQUIRE(position.pnl == 20000);
+        REQUIRE(position.side == Side::SHORT);
+        REQUIRE(*position.symbol == *order1.symbol);
+    }
+
+    SECTION("Apply BIGGER SELL Order to Long Position 3") {
+        price_t current_prince = 500;
+        json j1 = {
+                {"quantity",        200},
+                {"symbol",          "BTC"},
+                {"side",            "buy"},
+                {"filled",          200},
+                {"filled_at_price", 500},
+                {"limit_price",     500},
+                {"type",            "limit"},
+                {"status",          "closed"}
+        };
+        Order order1(j1);
+        json j2 = {
+                {"quantity",        400},
+                {"symbol",          "BTC"},
+                {"side",            "sell"},
+                {"filled",          400},
+                {"filled_at_price", 600},
+                {"limit_price",     0},
+                {"type",            "market"},
+                {"status",          "closed"}
+        };
+        Order order2(j2);
+//        std::cout << "Position PRE: " << position.to_json().dump(4) << std::endl;
+        REQUIRE(position.validate());
+        position.set_current_price(current_prince);
+        Position::ApplyOrderResult result1 = position.apply_order(order1);
+//        std::cout << "result1: " << result1.message << std::endl;
+        Position::ApplyOrderResult result2 = position.apply_order(order2);
+//        std::cout << "result2: " << result2.message << std::endl;
+//        std::cout << "Position POST: " << position.to_json().dump(4) << std::endl;
+
+        REQUIRE(position.validate());
+        REQUIRE(result2.message.empty());
+        REQUIRE(result2.success);
+        REQUIRE(position.balance == 200);
+        REQUIRE(position.entry_price == 600);
+        REQUIRE(position.pnl == 40000);
+        REQUIRE(position.side == Side::SHORT);
+        REQUIRE(*position.symbol == *order1.symbol);
+    }
+
+
     // TODO: short position with buy order
     // TODO: short position with bigger buy order
 

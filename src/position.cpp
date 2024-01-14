@@ -152,14 +152,19 @@ namespace trading::position {
                 result.success = true;
             } else if (order.side == trading::order::Side::SELL) {
                 if (balance >= order.filled) {
-                    balance -= order.filled;
+                    auto new_balance = balance - order.filled;
+                    entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
+                                  (price_t) order.filled;
+                    balance = new_balance;
                     result.pnl = pnl = get_pnl();
                     result.success = true;
                 } else {
-                    balance = order.filled - balance;
-                    entry_price = order.filled_at_price;
+                    auto new_balance = -(balance - order.filled);
+                    price_t add_to_pnl = (order.filled_at_price - entry_price) * (price_t) balance;
+                    entry_price =  order.filled_at_price;
+                    balance = new_balance;
                     side = Side::SHORT;
-                    result.pnl = pnl = get_pnl();
+                    result.pnl = pnl = get_pnl() + add_to_pnl;
                     result.success = true;
                 }
             } else {
