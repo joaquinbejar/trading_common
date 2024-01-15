@@ -82,10 +82,8 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
         REQUIRE(position.validate());
 
         json j_position = position.to_json();
-        std::cout << j_position.dump(4) << std::endl;
         Position position2(j_position);
         REQUIRE(position2.validate());
-        std::cout << position2.to_json().dump(4) << std::endl;
         Position position3 = Position(j_position.at("id").get<trading::position::id_t>(),
                                       j_position.at("timestamp").get<trading::position::timestamp_t>(),
                                       j_position.at("balance").get<size_t>(),
@@ -95,9 +93,25 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
                                       j_position.at("current_price").get<trading::position::price_t>(),
                                       j_position.at("pnl").get<trading::position::price_t>());
         REQUIRE(position3.validate());
-        std::cout << position3.to_json().dump(4) << std::endl;
-
-
+        REQUIRE(position.id == position2.id);
+        REQUIRE(position2.id == position3.id);
+        REQUIRE(position.timestamp == position2.timestamp);
+        REQUIRE(position2.timestamp == position3.timestamp);
+        REQUIRE(position.balance == position2.balance);
+        REQUIRE(position2.balance == position3.balance);
+        REQUIRE(*position.symbol == *position2.symbol);
+        REQUIRE(*position2.symbol == *position3.symbol);
+        REQUIRE(position.entry_price == position2.entry_price);
+        REQUIRE(position2.entry_price == position3.entry_price);
+        REQUIRE(position.current_price == position2.current_price);
+        REQUIRE(position2.current_price == position3.current_price);
+        REQUIRE(position.pnl == position2.pnl);
+        REQUIRE(position2.pnl == position3.pnl);
+        REQUIRE(position.side == position2.side);
+        REQUIRE(position2.side == position3.side);
+        REQUIRE(position.validate());
+        REQUIRE(position2.validate());
+        REQUIRE(position3.validate());
     }
 
     SECTION("Apply BUY Order to Position empty ") {
