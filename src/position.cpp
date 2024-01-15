@@ -101,9 +101,9 @@ namespace trading::position {
         return j;
     }
 
-    Position::ApplyOrderResult Position::apply_order(const trading::order::Order &order) {
-
+    Position::ApplyOrderResult Position::validateOrder(const trading::order::Order &order) {
         ApplyOrderResult result;
+        result.success = true;
         if (!order.validate().success) {
             if (order.filled == 0) {
                 result.message = "Order is not filled";
@@ -111,9 +111,103 @@ namespace trading::position {
                 result.message = "Order is not valid";
             }
             result.success = false;
-            return result;
         } else {
             std::cout << order.validate().message << std::endl;
+        }
+        return result;
+    }
+
+    Position::ApplyOrderResult Position::apply_order_for_empty_position(const trading::order::Order &order) {
+        // ... code for balance == 0
+        ApplyOrderResult result;
+        if (order.side == trading::order::Side::BUY) {
+            this->balance = order.filled;
+            entry_price = order.filled_at_price;
+            side = Side::LONG;
+            result.pnl = pnl = get_pnl();
+            result.success = true;
+        } else if (order.side == trading::order::Side::SELL) {
+            this->balance = order.quantity;
+            entry_price = order.filled_at_price;
+            side = Side::SHORT;
+            result.pnl = pnl = get_pnl();
+            result.success = true;
+        } else {
+            result.message = "Invalid side";
+            result.success = false;
+        }
+        return result;
+    }
+
+    Position::ApplyOrderResult Position::apply_order_for_long_position(const trading::order::Order &order) {
+// ... code for side == Side::LONG
+        ApplyOrderResult result;
+        if (order.side == trading::order::Side::BUY) {
+            auto new_balance = balance + order.filled;
+            entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
+                          (price_t) new_balance;
+            balance = new_balance;
+            result.pnl = pnl = get_pnl();
+            result.success = true;
+        } else if (order.side == trading::order::Side::SELL) {
+            if (balance >= order.filled) {
+                entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
+                              (price_t) order.filled;
+                balance = balance - order.filled;
+                result.pnl = pnl = get_pnl();
+                result.success = true;
+            } else {
+                price_t add_to_pnl = (order.filled_at_price - entry_price) * (price_t) balance;
+                entry_price = order.filled_at_price;
+                balance = -(balance - order.filled);
+                side = Side::SHORT;
+                result.pnl = pnl = get_pnl() + add_to_pnl;
+                result.success = true;
+            }
+        } else {
+            result.message = "Invalid side";
+            result.success = false;
+        }
+        return result;
+    }
+
+    Position::ApplyOrderResult Position::apply_order_for_short_position(const trading::order::Order &order) {
+        // ... code for side == Side::SHORT
+        ApplyOrderResult result;
+        if (order.side == trading::order::Side::BUY) {
+            if (balance >= order.filled) {
+                entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
+                              (price_t) order.filled;
+                balance -= order.filled;
+                result.pnl = pnl = get_pnl();
+                result.success = true;
+            } else {
+                // Change side from short to long
+                price_t add_to_pnl = (entry_price - order.filled_at_price) * (price_t) balance;
+                entry_price = order.filled_at_price;
+                balance = order.filled - balance;
+                side = Side::LONG;
+                result.pnl = pnl = get_pnl() + add_to_pnl;
+                result.success = true;
+            }
+        } else if (order.side == trading::order::Side::SELL) {
+            auto new_balance = balance + order.filled;
+            entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
+                          (price_t) new_balance;
+            balance = new_balance;
+            result.pnl = pnl = get_pnl();
+            result.success = true;
+        } else {
+            result.message = "Invalid side";
+            result.success = false;
+        }
+        return result;
+    }
+
+    Position::ApplyOrderResult Position::apply_order(const trading::order::Order &order) {
+        ApplyOrderResult result = validateOrder(order);
+        if (!result.success) {
+            return result;
         }
 
         if (symbol->empty()) {
@@ -123,80 +217,12 @@ namespace trading::position {
             result.success = false;
             return result;
         }
-
-        // position is empty
         if (balance == 0) {
-            if (order.side == trading::order::Side::BUY) {
-                this->balance = order.filled;
-                entry_price = order.filled_at_price;
-                side = Side::LONG;
-                result.pnl = pnl = get_pnl();
-                result.success = true;
-            } else if (order.side == trading::order::Side::SELL) {
-                this->balance = order.quantity;
-                entry_price = order.filled_at_price;
-                side = Side::SHORT;
-                result.pnl = pnl = get_pnl();
-                result.success = true;
-            } else {
-                result.message = "Invalid side";
-                result.success = false;
-            }
+            result = apply_order_for_empty_position(order);
         } else if (side == Side::LONG) {
-            if (order.side == trading::order::Side::BUY) {
-                auto new_balance = balance + order.filled;
-                entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
-                              (price_t) new_balance;
-                balance = new_balance;
-                result.pnl = pnl = get_pnl();
-                result.success = true;
-            } else if (order.side == trading::order::Side::SELL) {
-                if (balance >= order.filled) {
-                    entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
-                                  (price_t) order.filled;
-                    balance = balance - order.filled;
-                    result.pnl = pnl = get_pnl();
-                    result.success = true;
-                } else {
-                    price_t add_to_pnl = (order.filled_at_price - entry_price) * (price_t) balance;
-                    entry_price = order.filled_at_price;
-                    balance = -(balance - order.filled);
-                    side = Side::SHORT;
-                    result.pnl = pnl = get_pnl() + add_to_pnl;
-                    result.success = true;
-                }
-            } else {
-                result.message = "Invalid side";
-                result.success = false;
-            }
+            result = apply_order_for_long_position(order);
         } else if (side == Side::SHORT) {
-            if (order.side == trading::order::Side::BUY) {
-                if (balance >= order.filled) {
-                    entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
-                                  (price_t) order.filled;
-                    balance -= order.filled;
-                    result.pnl = pnl = get_pnl();
-                    result.success = true;
-                } else {
-                    price_t add_to_pnl = (entry_price - order.filled_at_price) * (price_t) balance;
-                    entry_price = order.filled_at_price;
-                    balance = order.filled - balance;
-                    side = Side::LONG;
-                    result.pnl = pnl = get_pnl() + add_to_pnl;
-                    result.success = true;
-                }
-            } else if (order.side == trading::order::Side::SELL) {
-                auto new_balance = balance + order.filled;
-                entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
-                              (price_t) new_balance;
-                balance = new_balance;
-                result.pnl = pnl = get_pnl();
-                result.success = true;
-            } else {
-                result.message = "Invalid side";
-                result.success = false;
-
-            }
+            result = apply_order_for_short_position(order);
         } else {
             result.message = "Invalid side";
             result.success = false;

@@ -30,8 +30,8 @@ namespace trading::position {
     };
 
 
-    struct Position {
-
+    class Position {
+    public:
         struct ApplyOrderResult : public Result {
             price_t pnl = 0;
         };
@@ -61,6 +61,15 @@ namespace trading::position {
         [[nodiscard]] json to_json() const;
 
         ApplyOrderResult apply_order(const trading::order::Order &order);
+
+    private:
+        Position::ApplyOrderResult apply_order_for_empty_position(const trading::order::Order &order);
+
+        Position::ApplyOrderResult apply_order_for_long_position(const trading::order::Order &order);
+
+        Position::ApplyOrderResult apply_order_for_short_position(const trading::order::Order &order);
+
+        static Position::ApplyOrderResult validateOrder(const trading::order::Order &order);
 
     };
 
