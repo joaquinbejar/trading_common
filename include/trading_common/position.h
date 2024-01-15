@@ -30,7 +30,6 @@ namespace trading::position {
     };
 
 
-
     struct Position {
 
         struct ApplyOrderResult : public Result {
