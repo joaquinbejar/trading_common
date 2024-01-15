@@ -92,7 +92,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
     Order order;
 
     SECTION("Order with all default values should be valid") {
-        REQUIRE(order.validate() == true);
+        REQUIRE(order.validate().success == true);
     }
 
     SECTION("Order with zero quantity should be invalid") {
@@ -107,25 +107,25 @@ TEST_CASE("Order Validation Tests", "[Order]") {
             "status": "OPEN"
         })"_json;
         Order open_qty = Order(j);
-        REQUIRE(open_qty.validate() == false);
+        REQUIRE(open_qty.validate().success == false);
     }
 
     SECTION("Order with non-zero quantity should be invalid but symbol is empty") {
         order.quantity = 10;
-        REQUIRE(order.validate() == false);
+        REQUIRE(order.validate().success == false);
     }
 
     SECTION("Order with non-null symbol should be invalid but no side") {
         order.quantity = 10;
         order.symbol = std::make_shared<std::string>("AAPL");
-        REQUIRE(order.validate() == false);
+        REQUIRE(order.validate().success == false);
     }
 
     SECTION("Order with valid side should be invalid but no type") {
         order.quantity = 10;
         order.symbol = std::make_shared<std::string>("AAPL");
         order.side = trading::order::Side::BUY;
-        REQUIRE(order.validate() == false);
+        REQUIRE(order.validate().success == false);
     }
 
     SECTION("Order with valid type should be invalid") {
@@ -133,7 +133,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
         order.symbol = std::make_shared<std::string>("AAPL");
         order.side = trading::order::Side::BUY;
         order.type = trading::order::Type::LIMIT;
-        REQUIRE(order.validate() == false);
+        REQUIRE(order.validate().success == false);
     }
 
     SECTION("Order with valid status should be invalid but no filled") {
@@ -142,7 +142,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
         order.side = trading::order::Side::BUY;
         order.type = trading::order::Type::LIMIT;
         order.status = trading::order::Status::OPEN;
-        REQUIRE(order.validate() == false);
+        REQUIRE(order.validate().success == false);
     }
 
     SECTION("Order with valid filled should be invalid but its open") {
@@ -152,7 +152,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
         order.type = trading::order::Type::MARKET;
         order.status = trading::order::Status::OPEN;
         order.filled = 10;
-        REQUIRE(order.validate() == false);
+        REQUIRE(order.validate().success == false);
     }
 
     SECTION("OPEN Order with valid fields should be valid") {
@@ -167,7 +167,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
             "status": "OPEN"
         })"_json;
         Order open_order = Order(j);
-        REQUIRE(open_order.validate() == true);
+        REQUIRE(open_order.validate().success == true);
     }
 
     SECTION("CLOSED Order with valid fields should be valid") {
@@ -182,7 +182,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
             "status": "CLOSED"
         })"_json;
         Order closed_order = Order(j);
-        REQUIRE(closed_order.validate() == true);
+        REQUIRE(closed_order.validate().success == true);
     }
 
     SECTION("FILLED Order with valid fields should be valid") {
@@ -198,7 +198,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
         })"_json;
         Order filled_order = Order(j);
 //        std::cout << filled_order.to_json().dump(4) << std::endl;
-        REQUIRE(filled_order.validate() == true);
+        REQUIRE(filled_order.validate().success == true);
     }
 
     SECTION("FILLED Order with valid fields but filled set and filled_at_price are zero should be invalid") {
@@ -213,7 +213,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
             "status": "FILLED"
         })"_json;
         Order filled_order = Order(j);
-        REQUIRE(filled_order.validate() == false);
+        REQUIRE(filled_order.validate().success == false);
     }
 
     SECTION("FILLED Order with valid fields but filled_at_price set and filled are zero should be invalid") {
@@ -228,7 +228,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
             "status": "FILLED"
         })"_json;
         Order filled_order = Order(j);
-        REQUIRE(filled_order.validate() == false);
+        REQUIRE(filled_order.validate().success == false);
     }
 
     SECTION("CANCELED Order with valid fields should be valid") {
@@ -243,7 +243,7 @@ TEST_CASE("Order Validation Tests", "[Order]") {
             "status": "CANCELED"
         })"_json;
         Order canceled_order = Order(j);
-        REQUIRE(canceled_order.validate() == true);
+        REQUIRE(canceled_order.validate().success == true);
     }
 
 }

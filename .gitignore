@@ -34,3 +34,4 @@
 .idea/
 .run/
 cmake-build-*/
+**/.DS_Store
