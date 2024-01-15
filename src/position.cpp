@@ -127,14 +127,12 @@ namespace trading::position {
         // position is empty
         if (balance == 0) {
             if (order.side == trading::order::Side::BUY) {
-                std::cout << "1" << std::endl;
                 this->balance = order.filled;
                 entry_price = order.filled_at_price;
                 side = Side::LONG;
                 result.pnl = pnl = get_pnl();
                 result.success = true;
             } else if (order.side == trading::order::Side::SELL) {
-                std::cout << "2" << std::endl;
                 this->balance = order.quantity;
                 entry_price = order.filled_at_price;
                 side = Side::SHORT;
@@ -146,7 +144,6 @@ namespace trading::position {
             }
         } else if (side == Side::LONG) {
             if (order.side == trading::order::Side::BUY) {
-                std::cout << "3" << std::endl;
                 auto new_balance = balance + order.filled;
                 entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
                               (price_t) new_balance;
@@ -155,19 +152,15 @@ namespace trading::position {
                 result.success = true;
             } else if (order.side == trading::order::Side::SELL) {
                 if (balance >= order.filled) {
-                    std::cout << "4" << std::endl;
-                    auto new_balance = balance - order.filled;
                     entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
                                   (price_t) order.filled;
-                    balance = new_balance;
+                    balance = balance - order.filled;
                     result.pnl = pnl = get_pnl();
                     result.success = true;
                 } else {
-                    std::cout << "5" << std::endl;
-                    auto new_balance = -(balance - order.filled);
                     price_t add_to_pnl = (order.filled_at_price - entry_price) * (price_t) balance;
                     entry_price = order.filled_at_price;
-                    balance = new_balance;
+                    balance = -(balance - order.filled);
                     side = Side::SHORT;
                     result.pnl = pnl = get_pnl() + add_to_pnl;
                     result.success = true;
@@ -179,14 +172,12 @@ namespace trading::position {
         } else if (side == Side::SHORT) {
             if (order.side == trading::order::Side::BUY) {
                 if (balance >= order.filled) {
-                    std::cout << "6" << std::endl;
                     entry_price = (entry_price * (price_t) balance - order.filled_at_price * (price_t) order.filled) /
                                   (price_t) order.filled;
                     balance -= order.filled;
                     result.pnl = pnl = get_pnl();
                     result.success = true;
                 } else {
-                    std::cout << "7" << std::endl;
                     price_t add_to_pnl = (entry_price - order.filled_at_price) * (price_t) balance;
                     entry_price = order.filled_at_price;
                     balance = order.filled - balance;
@@ -195,7 +186,6 @@ namespace trading::position {
                     result.success = true;
                 }
             } else if (order.side == trading::order::Side::SELL) {
-                std::cout << "8" << std::endl;
                 auto new_balance = balance + order.filled;
                 entry_price = (entry_price * (price_t) balance + order.filled_at_price * (price_t) order.filled) /
                               (price_t) new_balance;
