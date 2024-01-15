@@ -80,6 +80,44 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
         position.set_current_price(current_prince);
         Position::ApplyOrderResult result = position.apply_order(order);
         REQUIRE(position.validate());
+
+        json j_position = position.to_json();
+        std::cout << j_position.dump(4) << std::endl;
+        Position position2(j_position);
+        REQUIRE(position2.validate());
+        std::cout << position2.to_json().dump(4) << std::endl;
+        Position position3 = Position(j_position.at("id").get<trading::position::id_t>(),
+                                      j_position.at("timestamp").get<trading::position::timestamp_t>(),
+                                      j_position.at("balance").get<size_t>(),
+                                      std::make_shared<std::string>(j_position.at("symbol").get<std::string>()),
+                                      Side::LONG,
+                                      j_position.at("entry_price").get<trading::position::price_t>(),
+                                      j_position.at("current_price").get<trading::position::price_t>(),
+                                      j_position.at("pnl").get<trading::position::price_t>());
+        REQUIRE(position3.validate());
+        std::cout << position3.to_json().dump(4) << std::endl;
+
+
+    }
+
+    SECTION("Apply BUY Order to Position empty ") {
+        price_t current_prince = 600;
+        json j = {
+                {"quantity",        200},
+                {"symbol",          "BTC"},
+                {"side",            "buy"},
+                {"filled",          200},
+                {"filled_at_price", 500},
+                {"limit_price",     0},
+                {"type",            "market"},
+                {"status",          "closed"}
+        };
+
+        Order order(j);
+        REQUIRE(position.validate());
+        position.set_current_price(current_prince);
+        Position::ApplyOrderResult result = position.apply_order(order);
+        REQUIRE(position.validate());
         REQUIRE(result.message.empty());
         REQUIRE(result.success);
         REQUIRE(result.pnl == 200 * (current_prince - position.entry_price));
