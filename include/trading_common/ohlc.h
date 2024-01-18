@@ -10,14 +10,14 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <trading_common/common.h>
 #include <common/dates.h>
 
 using json = nlohmann::json;
+using namespace trading::common;
 
 namespace trading::common {
-    typedef unsigned long long timestamp_t;
-    typedef std::string date_t;
-    typedef std::shared_ptr<std::string> symbol_t;
+
 
     std::string epoch_to_date_string(long long epoch); // TODO: moved to common
 

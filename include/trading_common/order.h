@@ -8,16 +8,14 @@
 #include <cstdlib>
 #include <string>
 #include <common/common.h>
+#include <trading_common/common.h>
 #include <trading_common/ohlc.h>
 
 using OHLC = trading::common::OHLC;
 using OHLCV = trading::common::OHLCV;
+using namespace trading::common;
 
 namespace trading::order {
-    typedef unsigned long long timestamp_t;
-    typedef std::shared_ptr<std::string> symbol_t;
-    typedef std::string id_t;
-    typedef double price_t;
 
     class OrderException : public std::exception {
     private:
@@ -55,7 +53,7 @@ namespace trading::order {
 
 
     struct Order {
-        id_t id = ::common::key_generator();
+        id_t_ id = ::common::key_generator();
         timestamp_t timestamp = ::common::dates::get_unix_timestamp();
         size_t quantity = 0;
         symbol_t symbol = std::make_shared<std::string>();
@@ -71,7 +69,7 @@ namespace trading::order {
 
         Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side, size_t filled,
               price_t filled_at_price,
-              price_t limit_price, id_t id, Type type, Status status);
+              price_t limit_price, id_t_ id, Type type, Status status);
 
         explicit Order(json &j);
 
@@ -82,6 +80,13 @@ namespace trading::order {
         ValidateResult validate() const;
 
         [[nodiscard]] json to_json() const;
+
+    private:
+        bool is_empty_order() const;
+
+        ValidateResult check_symbol() const;
+
+        ValidateResult check_quantity() const;
 
 
     };

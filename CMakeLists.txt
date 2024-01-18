@@ -19,6 +19,7 @@ add_library(trading_common STATIC
         src/order.cpp include/trading_common/order.h
         src/position.cpp include/trading_common/position.h
         src/pnl.cpp include/trading_common/pnl.h
+        include/trading_common/common.h
 )
 
 target_include_directories(trading_common

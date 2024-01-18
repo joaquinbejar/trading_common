@@ -5,6 +5,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <trading_common/common.h>
 #include <trading_common/order.h>
 #include <trading_common/position.h>
 #include "nlohmann/json.hpp"
@@ -84,14 +85,14 @@ TEST_CASE("Position apply_order Method Tests", "[Position]") {
         json j_position = position.to_json();
         Position position2(j_position);
         REQUIRE(position2.validate());
-        Position position3 = Position(j_position.at("id").get<trading::position::id_t>(),
-                                      j_position.at("timestamp").get<trading::position::timestamp_t>(),
+        Position position3 = Position(j_position.at("id").get<id_t_>(),
+                                      j_position.at("timestamp").get<timestamp_t>(),
                                       j_position.at("balance").get<size_t>(),
                                       std::make_shared<std::string>(j_position.at("symbol").get<std::string>()),
                                       Side::LONG,
-                                      j_position.at("entry_price").get<trading::position::price_t>(),
-                                      j_position.at("current_price").get<trading::position::price_t>(),
-                                      j_position.at("pnl").get<trading::position::price_t>());
+                                      j_position.at("entry_price").get<price_t>(),
+                                      j_position.at("current_price").get<price_t>(),
+                                      j_position.at("pnl").get<price_t>());
         REQUIRE(position3.validate());
         REQUIRE(position.id == position2.id);
         REQUIRE(position2.id == position3.id);

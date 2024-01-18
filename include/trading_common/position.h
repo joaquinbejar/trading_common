@@ -7,16 +7,16 @@
 
 
 #include <cstdlib>
-#include <string>
+//#include <string>
 #include <common/common.h>
+#include <trading_common/common.h>
 #include <trading_common/ohlc.h>
 #include <trading_common/order.h>
 
+using Result = trading::common::Result;
+using namespace trading::common;
+
 namespace trading::position {
-    typedef unsigned long long timestamp_t;
-    typedef std::shared_ptr<std::string> symbol_t;
-    typedef std::string id_t;
-    typedef double price_t;
 
     enum class Side {
         NONE = 0,
@@ -24,10 +24,6 @@ namespace trading::position {
         SHORT = 2
     };
 
-    struct Result {
-        bool success = false;
-        std::string message{};
-    };
 
 
     class Position {
@@ -36,10 +32,10 @@ namespace trading::position {
             price_t pnl = 0;
         };
 
-        id_t id = ::common::key_generator();
+        id_t_ id = ::common::key_generator();
         timestamp_t timestamp = ::common::dates::get_unix_timestamp();
         size_t balance = 0;
-        symbol_t symbol = std::make_shared<std::string>();
+        symbol_t symbol = std::make_shared<symbol_value_t>();
         Side side = Side::NONE;
         price_t entry_price = 0;
         price_t current_price = 0;
@@ -47,7 +43,7 @@ namespace trading::position {
 
         Position() = default;
 
-        Position(id_t id, timestamp_t timestamp, size_t balance, symbol_t symbol, Side side, price_t entry_price,
+        Position(id_t_ id, timestamp_t timestamp, size_t balance, symbol_t symbol, Side side, price_t entry_price,
                  price_t current_price, price_t pnl);
 
         explicit Position(json &j);

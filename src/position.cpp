@@ -8,7 +8,7 @@
 
 namespace trading::position {
 
-    Position::Position(id_t id, timestamp_t timestamp, size_t balance, symbol_t symbol, Side side, price_t entry_price,
+    Position::Position(id_t_ id, timestamp_t timestamp, size_t balance, symbol_t symbol, Side side, price_t entry_price,
                        price_t current_price, price_t pnl) : id(std::move(id)), timestamp(timestamp), balance(balance),
                                                              symbol(std::move(symbol)),
                                                              side(side), entry_price(entry_price),
@@ -20,14 +20,13 @@ namespace trading::position {
             timestamp = j.at("timestamp").get<timestamp_t>();
         }
         if (j.contains("id") && j["id"].is_string()) {
-            id = j.at("id").get<id_t>();
+            id = j.at("id").get<id_t_>();
         }
 
         balance = j.at("balance").get<size_t>();
-        *symbol = j.at("symbol").get<std::string>();
+        *symbol = j.at("symbol").get<symbol_value_t>();
         entry_price = j.at("entry_price").get<price_t>();
         current_price = j.at("current_price").get<price_t>();
-        *symbol = j.at("symbol").get<std::string>();
         pnl = j.at("pnl").get<price_t>();
 
         std::string side_str = j.at("side").get<std::string>();
