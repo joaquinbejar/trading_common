@@ -60,3 +60,17 @@ target_link_libraries(test_pnl PRIVATE
         trading_common
         common
 )
+
+# =============================================================
+
+add_executable(test_instructions test_instructions.cpp)
+target_include_directories(test_instructions
+        PRIVATE
+        ${COMMON_INCLUDE}
+        ${NLOHMANN_JSON_INCLUDE}
+        ${SIMPLE_COLOR_INCLUDE}
+)
+target_link_libraries(test_instructions PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(test_instructions PRIVATE
+        common
+)
