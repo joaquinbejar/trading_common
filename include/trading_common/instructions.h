@@ -10,7 +10,7 @@
 #include <nlohmann/json.hpp>
 #include <common/common.h>
 
-namespace common::instructions {
+namespace trading::instructions {
 
     using json = nlohmann::json;
     using common::find_key_from_value;

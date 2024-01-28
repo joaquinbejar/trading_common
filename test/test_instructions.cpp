@@ -6,7 +6,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 
-using namespace common::instructions;
+using namespace trading::instructions;
 
 class simpleJson {
     public:

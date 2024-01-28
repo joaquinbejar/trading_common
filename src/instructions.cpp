@@ -3,7 +3,7 @@
 //
 #include <trading_common/instructions.h>
 
-namespace common::instructions {
+namespace trading::instructions {
 
     type_t get_type_name(Type type) {
         return TypeNames.at(type);
