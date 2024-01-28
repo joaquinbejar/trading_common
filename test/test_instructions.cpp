@@ -2,7 +2,7 @@
 // Created by Joaquin Bejar Garcia on 27/1/24.
 //
 
-#include <common/instructions.h>
+#include <trading_common/instructions.h>
 #include <catch2/catch_test_macros.hpp>
 
 
@@ -74,6 +74,36 @@ TEST_CASE("Instructions struct") {
         REQUIRE(instructions.selector == Selector::SET);
         REQUIRE(instructions.tickers == std::vector<std::string>({"GOOG", "AMZN"}));
         REQUIRE(instructions.other.param1 == "value1");
+        REQUIRE(instructions.other.param2 == 2);
+    }
+
+    SECTION("to_string") {
+        instructions.type = Type::EMA;
+        instructions.selector = Selector::ONE;
+        instructions.tickers = {"AAPL", "MSFT"};
+
+        std::string expected_str = R"({"other":{"param1":"","param2":2},"selector":"one","tickers":["AAPL","MSFT"],"type":"ema"})";
+        REQUIRE(instructions.to_string() == expected_str);
+    }
+
+    SECTION("std::string") {
+        instructions.type = Type::EMA;
+        instructions.selector = Selector::ONE;
+        instructions.tickers = {"AAPL", "MSFT"};
+
+        std::string expected_str = R"({"other":{"param1":"","param2":2},"selector":"one","tickers":["AAPL","MSFT"],"type":"ema"})";
+        REQUIRE(instructions.to_string() == expected_str);
+        std::string get_string = instructions;
+        REQUIRE(get_string == expected_str);
+    }
+
+    SECTION("from_string") {
+        std::string expected_str = R"({"other":{"param1":"","param2":2},"selector":"one","tickers":["AAPL","MSFT"],"type":"ema"})";
+        instructions.from_string(expected_str);
+        REQUIRE(instructions.type == Type::EMA);
+        REQUIRE(instructions.selector == Selector::ONE);
+        REQUIRE(instructions.tickers == std::vector<std::string>({"AAPL", "MSFT"}));
+        REQUIRE(instructions.other.param1.empty());
         REQUIRE(instructions.other.param2 == 2);
     }
 }

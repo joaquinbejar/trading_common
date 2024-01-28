@@ -17,22 +17,22 @@ namespace common::instructions {
     typedef std::string type_t;
     typedef std::string selector_t;
 
-     enum class Type {
-        NONE=0,
-        TICKER=1,
-        OHLC=2,
-        MACD=3,
-        SMA=4,
-        EMA=5
+    enum class Type {
+        NONE = 0,
+        TICKER = 1,
+        OHLC = 2,
+        MACD = 3,
+        SMA = 4,
+        EMA = 5
     };
 
     const std::map<Type, type_t> TypeNames = {
-            {Type::NONE,    ""},
-            {Type::TICKER,  "ticker"},
-            {Type::OHLC,    "ohlc"},
-            {Type::MACD,    "macd"},
-            {Type::SMA,     "sma"},
-            {Type::EMA,     "ema"}
+            {Type::NONE,   ""},
+            {Type::TICKER, "ticker"},
+            {Type::OHLC,   "ohlc"},
+            {Type::MACD,   "macd"},
+            {Type::SMA,    "sma"},
+            {Type::EMA,    "ema"}
     };
 
     type_t get_type_name(Type type);
@@ -40,17 +40,17 @@ namespace common::instructions {
     Type get_type_from_string(const type_t &type);
 
     enum class Selector {
-        NONE=0,
-        ALL=1,
-        ONE=2,
-        SET=3
+        NONE = 0,
+        ALL = 1,
+        ONE = 2,
+        SET = 3
     };
 
     const std::map<Selector, selector_t> SelectorNames = {
-            {Selector::NONE,    ""},
-            {Selector::ALL,     "all"},
-            {Selector::ONE,     "one"},
-            {Selector::SET,     "set"}
+            {Selector::NONE, ""},
+            {Selector::ALL,  "all"},
+            {Selector::ONE,  "one"},
+            {Selector::SET,  "set"}
     };
 
     selector_t get_selector_name(Selector selector);
@@ -58,13 +58,12 @@ namespace common::instructions {
     Selector get_selector_from_string(const selector_t &selector);
 
     template<typename T>
-    concept JsonSerializable = requires(T t, const nlohmann::json& j) {
+    concept JsonSerializable = requires(T t, const nlohmann::json &j) {
         { t.to_json() } -> std::same_as<nlohmann::json>;
         { t.from_json(j) } -> std::same_as<void>;
     };
 
-    template<typename T>
-    requires JsonSerializable<T>
+    template<typename T> requires JsonSerializable<T>
     struct Instructions {
         Type type = Type::NONE;
         Selector selector = Selector::NONE;
@@ -87,7 +86,20 @@ namespace common::instructions {
             if (j.contains("other"))
                 other.from_json(j["other"]);
         }
+
+        operator std::string() const {
+            return to_string();
+        }
+
+        [[nodiscard]] std::string to_string() const {
+            return to_json().dump();
+        }
+
+        void from_string(const std::string &s) {
+            from_json(json::parse(s));
+        }
     };
+
 
 }
 
