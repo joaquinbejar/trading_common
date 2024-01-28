@@ -107,3 +107,50 @@ TEST_CASE("Instructions struct") {
         REQUIRE(instructions.other.param2 == 2);
     }
 }
+
+
+TEST_CASE("Instructions struct in threadqueue") {
+    ::common::ThreadQueue<Instructions<simpleJson>> queue;
+
+    SECTION("Enqueue 1") {
+        Instructions<simpleJson> instruction;
+        instruction.type = Type::EMA;
+        instruction.selector = Selector::ONE;
+        instruction.tickers = {"AAPL", "MSFT"};
+        instruction.other.param1 = "value1";
+        instruction.other.param2 = 2;
+
+        queue.enqueue(instruction);
+        REQUIRE(queue.size() == 1);
+
+        Instructions<simpleJson> instruction2;
+        bool result = queue.dequeue(instruction2);
+        REQUIRE(result);
+        REQUIRE(instruction2.type == Type::EMA);
+        REQUIRE(instruction2.selector == Selector::ONE);
+        REQUIRE(instruction2.tickers == std::vector<std::string>({"AAPL", "MSFT"}));
+        REQUIRE(instruction2.other.param1 == "value1");
+        REQUIRE(instruction2.other.param2 == 2);
+        std::string expected_str = R"({"other":{"param1":"value1","param2":2},"selector":"one","tickers":["AAPL","MSFT"],"type":"ema"})";
+        REQUIRE(instruction2.to_string() == expected_str);
+    }
+
+    SECTION("Enqueue 2") {
+        Instructions<simpleJson> instruction;
+        instruction.from_string(R"({"other":{"param1":"value1","param2":2},"selector":"one","tickers":["AAPL","MSFT"],"type":"ema"})");
+        queue.enqueue(instruction);
+        REQUIRE(queue.size() == 1);
+
+        Instructions<simpleJson> instruction2;
+        bool result = queue.dequeue(instruction2);
+        REQUIRE(result);
+        REQUIRE(instruction2.type == Type::EMA);
+        REQUIRE(instruction2.selector == Selector::ONE);
+        REQUIRE(instruction2.tickers == std::vector<std::string>({"AAPL", "MSFT"}));
+        REQUIRE(instruction2.other.param1 == "value1");
+        REQUIRE(instruction2.other.param2 == 2);
+        std::string expected_str = R"({"other":{"param1":"value1","param2":2},"selector":"one","tickers":["AAPL","MSFT"],"type":"ema"})";
+        REQUIRE(instruction2.to_string() == expected_str);
+    }
+
+}
