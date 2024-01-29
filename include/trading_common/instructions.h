@@ -80,11 +80,15 @@ namespace trading::instructions {
         }
 
         void from_json(const json &j) {
+            try {
             type = get_type_from_string(j["type"].get<std::string>());
             selector = get_selector_from_string(j["selector"].get<std::string>());
             tickers = j["tickers"].get<std::vector<std::string>>();
             if (j.contains("other"))
                 other.from_json(j["other"]);
+            } catch (const std::exception &e) {
+                throw std::runtime_error("Error parsing Instructions from_json: " + std::string(e.what()));
+            }
         }
 
         operator std::string() const {
@@ -96,7 +100,11 @@ namespace trading::instructions {
         }
 
         void from_string(const std::string &s) {
-            from_json(json::parse(s));
+            try {
+                from_json(json::parse(s));
+            } catch (const std::exception &e) {
+                throw std::runtime_error("Error parsing Instructions from_string: " + std::string(e.what()));
+            }
         }
     };
 
