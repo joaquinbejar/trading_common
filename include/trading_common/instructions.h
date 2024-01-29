@@ -9,6 +9,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 #include <common/common.h>
+#include <common/dates.h>
 
 namespace trading::instructions {
 
@@ -68,6 +69,7 @@ namespace trading::instructions {
         Type type = Type::NONE;
         Selector selector = Selector::NONE;
         std::vector<std::string> tickers;
+        size_t timestamp = ::common::dates::get_unix_timestamp();
         T other;
 
         [[nodiscard]] json to_json() const {
@@ -75,17 +77,19 @@ namespace trading::instructions {
             result["type"] = get_type_name(type);
             result["selector"] = get_selector_name(selector);
             result["tickers"] = tickers;
+            result["timestamp"] = timestamp;
             result["other"] = other.to_json();
             return result;
         }
 
         void from_json(const json &j) {
             try {
-            type = get_type_from_string(j["type"].get<std::string>());
-            selector = get_selector_from_string(j["selector"].get<std::string>());
-            tickers = j["tickers"].get<std::vector<std::string>>();
-            if (j.contains("other"))
-                other.from_json(j["other"]);
+                type = get_type_from_string(j.at("type").get<std::string>());
+                selector = get_selector_from_string(j.at("selector").get<std::string>());
+                tickers = j.at("tickers").get<std::vector<std::string>>();
+                timestamp = j.at("timestamp").get<size_t>();
+                if (j.contains("other"))
+                    other.from_json(j.at("other"));
             } catch (const std::exception &e) {
                 throw std::runtime_error("Error parsing Instructions from_json: " + std::string(e.what()));
             }
