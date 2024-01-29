@@ -72,6 +72,26 @@ namespace trading::instructions {
         size_t timestamp = ::common::dates::get_unix_timestamp();
         T other;
 
+        bool validate() {
+            if (type == Type::NONE)
+                return false;
+            if (selector == Selector::NONE)
+                return false;
+            if (tickers.empty() && selector != Selector::ALL)
+                return false;
+            if (timestamp == 0)
+                return false;
+
+            if (selector == Selector::ONE && tickers.size() != 1)
+                tickers.resize(1);
+            if (selector == Selector::SET && tickers.size() == 1)
+                selector = Selector::ONE;
+            if (selector == Selector::ALL && !tickers.empty())
+                tickers.clear();
+
+            return true;
+        }
+
         [[nodiscard]] json to_json() const {
             json result;
             result["type"] = get_type_name(type);
