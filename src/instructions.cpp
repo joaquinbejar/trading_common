@@ -10,7 +10,7 @@ namespace trading::instructions {
     }
 
     Type get_type_from_string(const type_t &type){
-        return find_key_from_value(TypeNames, type, Type::NONE);
+        return ::common::find_key_from_value(TypeNames, type, Type::NONE);
     }
 
     selector_t get_selector_name(Selector selector) {
@@ -18,6 +18,6 @@ namespace trading::instructions {
     }
 
     Selector get_selector_from_string(const selector_t &selector){
-        return find_key_from_value(SelectorNames, selector, Selector::NONE);
+        return ::common::find_key_from_value(SelectorNames, selector, Selector::NONE);
     }
 }
