@@ -14,7 +14,7 @@
 namespace trading::instructions {
 
     using json = nlohmann::json;
-    using common::find_key_from_value;
+    using ::common::find_key_from_value;
     typedef std::string type_t;
     typedef std::string selector_t;
 
