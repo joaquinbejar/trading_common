@@ -7,12 +7,13 @@ target_include_directories(test_ohlc
         ${TRADING_COMMON_INCLUDE}
         ${NLOHMANN_JSON_INCLUDE}
 )
-
 target_link_libraries(test_ohlc PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(test_ohlc PRIVATE
         trading_common
         common
 )
+
+# =============================================================
 
 add_executable(test_order test_order.cpp)
 target_include_directories(test_order
@@ -22,12 +23,13 @@ target_include_directories(test_order
         ${TRADING_COMMON_INCLUDE}
         ${NLOHMANN_JSON_INCLUDE}
 )
-
 target_link_libraries(test_order PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(test_order PRIVATE
         trading_common
         common
 )
+
+# =============================================================
 
 add_executable(test_position test_position.cpp)
 target_include_directories(test_position
@@ -37,9 +39,40 @@ target_include_directories(test_position
         ${TRADING_COMMON_INCLUDE}
         ${NLOHMANN_JSON_INCLUDE}
 )
-
 target_link_libraries(test_position PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(test_position PRIVATE
+        trading_common
+        common
+)
+
+# =============================================================
+
+add_executable(test_pnl test_pnl.cpp)
+target_include_directories(test_pnl
+        PRIVATE
+        ${SIMPLE_COLOR_INCLUDE}
+        ${COMMON_INCLUDE}
+        ${TRADING_COMMON_INCLUDE}
+        ${NLOHMANN_JSON_INCLUDE}
+)
+target_link_libraries(test_pnl PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(test_pnl PRIVATE
+        trading_common
+        common
+)
+
+# =============================================================
+
+add_executable(test_instructions test_instructions.cpp)
+target_include_directories(test_instructions
+        PRIVATE
+        ${SIMPLE_COLOR_INCLUDE}
+        ${COMMON_INCLUDE}
+        ${TRADING_COMMON_INCLUDE}
+        ${NLOHMANN_JSON_INCLUDE}
+)
+target_link_libraries(test_instructions PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(test_instructions PRIVATE
         trading_common
         common
 )

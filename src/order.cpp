@@ -15,7 +15,7 @@ namespace trading::order {
     }
 
     Order::Order(timestamp_t timestamp, size_t quantity, symbol_t symbol, Side side,
-                 size_t filled, price_t filled_at_price, price_t limit_price, id_t id,
+                 size_t filled, price_t filled_at_price, price_t limit_price, id_t_ id,
                  Type type, Status status) : timestamp(timestamp),
                                              quantity(quantity),
                                              symbol(std::move(symbol)),
@@ -33,11 +33,11 @@ namespace trading::order {
                 timestamp = j.at("timestamp").get<timestamp_t>();
             }
             if (j.contains("id") && j["id"].is_string()) {
-                id = j.at("id").get<id_t>();
+                id = j.at("id").get<id_t_>();
             }
 
             quantity = j.at("quantity").get<size_t>();
-            *symbol = j.at("symbol").get<std::string>();
+            *symbol = j.at("symbol").get<symbol_value_t>();
             filled = j.at("filled").get<size_t>();
             filled_at_price = j.at("filled_at_price").get<price_t>();
             limit_price = j.at("limit_price").get<price_t>();
@@ -145,89 +145,82 @@ namespace trading::order {
         return j;
     }
 
-    ValidateResult Order::validate() const {
-        ValidateResult result;
-        if (timestamp > 0
-            && quantity == 0
-            && symbol->empty()
-            && side == Side::NONE
-            && filled == 0
-            && filled_at_price == 0
-            && limit_price == 0
-            && !id.empty()
-            && type == Type::NONE
-            && status == Status::NONE) {
-            result.success = true;
-        }
+    bool Order::is_empty_order() const {
+        return (timestamp > 0
+                && quantity == 0
+                && symbol && symbol->empty()
+                && side == Side::NONE
+                && filled == 0
+                && filled_at_price == 0
+                && limit_price == 0
+                && !id.empty()
+                && type == Type::NONE
+                && status == Status::NONE);
+    }
 
-        if (quantity == 0) {
-            result.success = false;
-            result.message = "Quantity is 0";
-        }
+    ValidateResult Order::check_symbol() const {
         if (symbol == nullptr) {
-            result.success = false;
-            result.message = "Symbol is null";
+            return {false, "Symbol is null"};
+        } else if (symbol->empty()) {
+            return {false, "Symbol is empty"};
         }
-        if (symbol->empty()) {
-            result.success = false;
-            result.message = "Symbol is empty";
-        }
+        return {true, ""};
+    }
+
+    ValidateResult Order::check_quantity() const {
+        return (quantity == 0) ? ValidateResult{false,"Quantity is 0"} : ValidateResult{true,""};
+    }
+
+    ValidateResult Order::validate() const {
+        ValidateResult result{true,""};
+
+        if (is_empty_order()) return {true, ""};
+
+        result = check_quantity(); if (!result.success) return result;
+        result = check_symbol(); if (!result.success) return result;
+
         if (side == Side::NONE) {
-            result.success = false;
-            result.message = "Side is NONE";
+            return {false, "Side is NONE"};
         }
         if (type == Type::NONE) {
-            result.success = false;
-            result.message = "Type is NONE";
+            return {false, "Type is NONE"};
         }
         if (status == Status::NONE) {
-            result.success = false;
-            result.message = "Status is NONE";
+            return {false, "Status is NONE"};
         }
-
         if ( type == Type::LIMIT && limit_price == 0) {
-            result.success = false;
-            result.message = "Type is LIMIT but limit_price is 0";
+            return {false, "Type is LIMIT but limit_price is 0"};
         }
-
         if (limit_price != 0 && type != Type::LIMIT) {
-            result.success = false;
-            result.message = "Type is not LIMIT but limit_price is not 0";
+            return {false, "Type is not LIMIT but limit_price is not 0"};
         }
-
         if (filled != 0 && filled_at_price == 0) {
-            result.success = false;
-            result.message = "Filled is not 0 but filled_at_price is 0";
+            return {false, "Filled is not 0 but filled_at_price is 0"};
         }
-
         if (filled_at_price != 0 && filled == 0) {
-            result.success = false;
-            result.message = "Filled_at_price is not 0 but filled is 0";
+            return {false, "Filled_at_price is not 0 but filled is 0"};
         }
 
         switch (status) {
             case Status::OPEN:
                 if (filled != 0) {
-                    result.success = false;
-                    result.message = "Status is OPEN but filled is not 0";
+                    return {false, "Status is OPEN but filled is not 0"};
                 }
                 break;
             case Status::CLOSED:
                 break;
             case Status::FILLED:
                 if (filled == 0) {
-                    result.success = false;
-                    result.message = "Status is FILLED but filled is 0";
+                    return {false, "Status is FILLED but filled is 0"};
                 }
                 break;
             case Status::CANCELED:
                 break;
             default:
-                result.success = false;
-                result.message = "Status is NONE";
+                return {false, "Status is NONE"};
 
         }
-        result.success = true;
+
         return result;
     }
 }

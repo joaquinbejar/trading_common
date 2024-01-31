@@ -22,13 +22,13 @@ namespace trading::common {
         return oss.str();
     }
 
-    Symbol::Symbol() : symbol(std::make_shared<std::string>()) {}
+    Symbol::Symbol() : symbol(std::make_shared<symbol_value_t>()) {}
 
     Symbol::Symbol(symbol_t symbol) : symbol(std::move(symbol)) {}
 
     Symbol::Symbol(const json &j) : symbol(std::make_shared<std::string>()) {
         try {
-            *symbol = j.at("symbol").get<std::string>();
+            *symbol = j.at("symbol").get<symbol_value_t>();
         } catch (json::exception &e) {
             throw OHLCException("Error parsing OHLC json: " + std::string(e.what()));
         }
@@ -182,7 +182,7 @@ namespace trading::common {
 
         std::istringstream ss{date};
         std::tm tm{};
-        ss >> std::get_time(&tm, "%Y-%m-%d"); // Here is the correct way to parse a date string
+        ss >> std::get_time(&tm, "%Y-%m-%d");
 
         // convert struct tm to time_t and then to system_clock::time_point
         auto timePoint = std::chrono::system_clock::from_time_t(std::mktime(&tm));
