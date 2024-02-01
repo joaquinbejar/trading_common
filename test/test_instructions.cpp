@@ -21,6 +21,29 @@ class simpleJson {
     }
 };
 
+class MetaInstruction {
+
+public:
+    std::string date;
+    std::string table; // destination table in DB
+    bool gte = false; // greater than or equal
+
+    [[nodiscard]] json to_json() const {
+        return {{"date",  date},
+                {"table", table},
+                {"gte",   gte}};
+    }
+
+    void from_json(const json &j) {
+        if (j.contains("date"))
+            date = j.at("date").get<std::string>();
+        if (j.contains("table"))
+            table = j.at("table").get<std::string>();
+        if (j.contains("gte"))
+            gte = j.at("gte").get<bool>();
+    }
+};
+
 TEST_CASE("Type enum and functions") {
     SECTION("get_type_name") {
         REQUIRE(get_type_name(Type::NONE).empty());
@@ -31,6 +54,53 @@ TEST_CASE("Type enum and functions") {
         REQUIRE(get_type_from_string("ticker") == Type::TICKER);
         REQUIRE(get_type_from_string("invalid") == Type::NONE);
     }
+}
+
+
+
+TEST_CASE("Testing Instructions<MetaInstruction>", "[Instructions<MetaInstruction>]") {
+    Instructions<MetaInstruction> instruction;
+    json j = R"(
+        {
+            "type": "ticker",
+            "selector": "one",
+            "tickers": ["AAPL"],
+            "timestamp": 1706639471,
+            "other": {
+                "table": "Tickers",
+                "date": "2024-01-30",
+                "gte": true
+            }
+        }
+        )"_json;
+    instruction.from_json(j);
+    REQUIRE(instruction.type == Type::TICKER);
+    REQUIRE(instruction.selector == Selector::ONE);
+    REQUIRE(instruction.tickers.size() == 1);
+    REQUIRE(instruction.tickers[0] == "AAPL");
+    REQUIRE(instruction.timestamp == 1706639471);
+    REQUIRE(instruction.other.date == "2024-01-30");
+    REQUIRE(instruction.other.table == "Tickers");
+    REQUIRE(instruction.other.gte);
+    json to_json = instruction.to_json();
+    REQUIRE(to_json["type"] == "ticker");
+    REQUIRE(to_json["selector"] == "one");
+    REQUIRE(to_json["tickers"] == json({"AAPL"}));
+    REQUIRE(to_json["timestamp"] == 1706639471);
+    REQUIRE(to_json["other"]["date"] == "2024-01-30");
+    REQUIRE(to_json["other"]["table"] == "Tickers");
+    REQUIRE(to_json["other"]["gte"]);
+    REQUIRE(instruction.to_string() == R"({"other":{"date":"2024-01-30","gte":true,"table":"Tickers"},"selector":"one","tickers":["AAPL"],"timestamp":1706639471,"type":"ticker"})");
+    Instructions<MetaInstruction> instruction1;
+    instruction1.from_string(R"({"other":{"date":"2024-01-30","gte":true,"table":"Tickers"},"selector":"one","tickers":["AAPL"],"timestamp":1706639471,"type":"ticker"})");
+    REQUIRE(instruction1.type == Type::TICKER);
+    REQUIRE(instruction1.selector == Selector::ONE);
+    REQUIRE(instruction1.tickers.size() == 1);
+    REQUIRE(instruction1.tickers[0] == "AAPL");
+    REQUIRE(instruction1.timestamp == 1706639471);
+    REQUIRE(instruction1.other.date == "2024-01-30");
+    REQUIRE(instruction1.other.table == "Tickers");
+    REQUIRE(instruction1.other.gte);
 }
 
 TEST_CASE("Selector enum and functions") {
