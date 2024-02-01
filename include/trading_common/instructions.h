@@ -62,6 +62,7 @@ namespace trading::instructions {
     concept JsonSerializable = requires(T t, const nlohmann::json &j) {
         { t.to_json() } -> std::same_as<nlohmann::json>;
         { t.from_json(j) } -> std::same_as<void>;
+        { t.validate() } -> std::same_as<bool>;
     };
 
     template<typename T> requires JsonSerializable<T>
@@ -73,6 +74,8 @@ namespace trading::instructions {
         T other;
 
         bool validate() {
+            if (!other.validate())
+                return false;
             if (type == Type::NONE)
                 return false;
             if (selector == Selector::NONE)

@@ -19,6 +19,9 @@ class simpleJson {
         param1 = j.contains("param1") ? j["param1"].get<std::string>() : "";
         param2 = j.contains("param2") ? j["param2"].get<int>() : 0;
     }
+    bool validate() {
+        return true;
+    }
 };
 
 class MetaInstruction {
@@ -41,6 +44,24 @@ public:
             table = j.at("table").get<std::string>();
         if (j.contains("gte"))
             gte = j.at("gte").get<bool>();
+    }
+
+    bool validate() const {
+        if (table.empty())
+            return false;
+        json j = to_json();
+        if (j.empty())
+            return false;
+        if (!j.contains("date"))
+            return false;
+        if (!j.contains("table"))
+            return false;
+        if (!j.contains("gte"))
+            return false;
+        if (j.is_array())
+            return false;
+
+        return true;
     }
 };
 
