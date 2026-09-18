@@ -76,14 +76,14 @@ namespace trading::order {
     }
 
     void Order::check_match_price(OHLC &ohlc) {
-        if (ohlc.low <= this->limit_price <= ohlc.high && type == Type::LIMIT) {
+        if (ohlc.low <= this->limit_price && this->limit_price <= ohlc.high && type == Type::LIMIT) {
             this->filled_at_price = this->limit_price;
             status = Status::FILLED;
         }
     }
 
     void Order::check_match_price(OHLCV &ohlc) {
-        if (ohlc.low <= this->limit_price <= ohlc.high && type == Type::LIMIT) {
+        if (ohlc.low <= this->limit_price && this->limit_price <= ohlc.high && type == Type::LIMIT) {
             this->filled_at_price = this->limit_price;
             if (ohlc.volume >= this->quantity) {
                 this->filled = this->quantity;
